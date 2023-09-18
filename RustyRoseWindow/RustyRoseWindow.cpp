@@ -72,15 +72,19 @@ int main(int argc, char* args[]) {
 
     ScreenSize screenSize(1280, 720);
 
-    std::string tak = "Are you sure you want to override save file?";
-    RustyDialogWindow dialogWindow(tak, 500, 230, &fonts, renderer, screenSize);
-    dialogWindow.setTextFontSize(FontSize::Large);
-    dialogWindow.setButtonFontSize(FontSize::Medium);
+    std::string text = "Are you sure you want to override save file?";
+    RustyDialogWindow dialogWindow(text, 500, 230, fonts.Medium, fonts.Small, renderer, screenSize);
+    dialogWindow.setTextFont(fonts.Large);
+    dialogWindow.setButtonFont(fonts.Medium);
     dialogWindow.make();
 
-    RustyButton button(renderer, &fonts, 1, "Test guzika", 200, 200, &screenSize);
-    button.setBackGroundColor({ 0x70, 0x70, 0x50, 0xff });
-    button.make();
+    RustyButton button1(renderer, fonts.Medium, 1, "guzik numer 1", 200, 100, &screenSize);
+    button1.setPosition(screenSize.Width - button1.getPosition()->w, 0);
+    button1.make();
+
+    RustyButton button2(renderer, fonts.Small, 1, "guzik numer 2", 200, 100, &screenSize);
+    button2.setPosition(0, 0);
+    button2.make();
 
 
     std::string repsponse = dialogWindow.show() ? "True" : "False";
@@ -103,7 +107,8 @@ int main(int argc, char* args[]) {
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, reposneTexture, NULL, responseSize);
-        SDL_RenderCopy(renderer, button.getTexture(), NULL, button.getPosition());
+        SDL_RenderCopy(renderer, button1.getTexture(), NULL, button1.getPosition());
+        SDL_RenderCopy(renderer, button2.getTexture(), NULL, button2.getPosition());
         SDL_RenderPresent(renderer);
         
         change++;
@@ -117,7 +122,8 @@ int main(int argc, char* args[]) {
             change = 0;
         }
 
-        button.setHover(hover);
+        button1.setHover(hover);
+        button2.setHover(!hover);
 
     }
 

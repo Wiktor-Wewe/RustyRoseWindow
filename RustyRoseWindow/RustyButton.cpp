@@ -1,9 +1,8 @@
 #include "RustyButton.h"
 
-RustyButton::RustyButton(SDL_Renderer* renderer, Fonts* fonts, int id, std::string text, int width, int height, ScreenSize* screenSize)
+RustyButton::RustyButton(SDL_Renderer* renderer, TTF_Font* font, int id, std::string text, int width, int height, ScreenSize* screenSize)
 {
 	this->_renderer = renderer;
-	this->_fonts = fonts;
 	this->_id = id;
 	this->_isSelected = false;
 	this->_text = text;
@@ -15,7 +14,7 @@ RustyButton::RustyButton(SDL_Renderer* renderer, Fonts* fonts, int id, std::stri
 	this->_position->x = (this->_screenSize->Width / 2) - (this->_position->w / 2);
 	this->_position->y = (this->_screenSize->Height / 2) - (this->_position->h / 2);
 
-	this->_textFont = this->_fonts->Medium;
+	this->_font = font;
 	this->_textColor = { 0xff, 0xff, 0xff, 0xff };
 	this->_textHoverColor = { 0xff, 0x99, 0x00, 0xff };
 	this->_textPosition = new SDL_Rect;
@@ -47,17 +46,9 @@ void RustyButton::setText(std::string text)
 	this->_text = text;
 }
 
-void RustyButton::setTextSize(FontSize fontSize)
+void RustyButton::setFont(TTF_Font* font)
 {
-	if(fontSize == FontSize::Small) {
-		this->_textFont = this->_fonts->Small;
-	}
-	else if (fontSize == FontSize::Medium) {
-		this->_textFont = this->_fonts->Medium;
-	}
-	else if (fontSize == FontSize::Large) {
-		this->_textFont = this->_fonts->Large;
-	}
+	this->_font = font;
 }
 
 void RustyButton::setTextColor(SDL_Color color)
@@ -104,7 +95,7 @@ void RustyButton::make()
 	SDL_RenderClear(this->_renderer);
 
 	// draw text on main texture
-	SDL_Texture* textTexture = makeTextureFromText(this->_text, this->_textPosition, this->_textFont, this->_textColor, this->_textHoverColor, this->_renderer, this->_position->w);
+	SDL_Texture* textTexture = makeTextureFromText(this->_text, this->_textPosition, this->_font, this->_textColor, this->_textHoverColor, this->_renderer, this->_position->w);
 	this->_textPosition->x = (this->_position->w / 2) - (this->_textPosition->w / 2);
 	this->_textPosition->y = (this->_position->h / 2) - (this->_textPosition->h / 2);
 	SDL_RenderCopy(this->_renderer, textTexture, NULL, this->_textPosition);

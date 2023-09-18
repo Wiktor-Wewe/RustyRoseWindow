@@ -5,19 +5,47 @@
 class RustyMiniWindow
 {
 public :
-	RustyMiniWindow();
+	struct WindowText {
+		std::string text;
+		SDL_Texture* texture;
+		SDL_Rect* rect;
+	};
+
+	RustyMiniWindow(int width, int height, TTF_Font* defaultFont, SDL_Renderer* renderer, ScreenSize* screenSize);
+	void setPosition(int x, int y);
+	void setSize(int width, int height);
+	void setDefaultFont(TTF_Font* font);
+	void setBackGroundColor(SDL_Color color);
+	void setWindowHoverColor(SDL_Color color);
+	void setFontColor(SDL_Color color);
+	void setFontHoverColor(SDL_Color color);
+
+	void addText(std::string text, int x, int y, TTF_Font* font = NULL);
+	void removeText(std::string text);
+
+	void addButton(std::string text, int id, int width, int height, TTF_Font* font = NULL);
+	void removeButton(int id);
+
+	void move(int vecx, int vecy);
+	void make();
+	void show();
 
 	~RustyMiniWindow();
 
 private:
+	int _selectedId;
+	SDL_Rect* _position;
 	SDL_Renderer* _renderer;
-	int _selectIndex;
-	bool _end;
+	TTF_Font* _defaultFont;
 
-	SDL_Texture* _mainTexture; // main texture without hover
-	SDL_Texture* _mainTextureHover; // only hover to main texture
+	SDL_Color _backGroundColor;
+	SDL_Color _windowHoverColor;
+	SDL_Color _fontColor;
+	SDL_Color _fontHoverColor;
 
+	std::vector<WindowText*> _text;
+	std::vector<RustyButton*> _buttons;
 
-
+	SDL_Texture* _texture;
 };
 

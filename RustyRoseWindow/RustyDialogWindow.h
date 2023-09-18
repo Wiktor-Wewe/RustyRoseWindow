@@ -4,14 +4,14 @@
 class RustyDialogWindow
 {
 public:
-	RustyDialogWindow(std::string text, int windowWidth, int windowHeight, Fonts* fonts, SDL_Renderer* renderer, ScreenSize screenSize);
+	RustyDialogWindow(std::string text, int windowWidth, int windowHeight, TTF_Font* textFont, TTF_Font* buttonFont, SDL_Renderer* renderer, ScreenSize screenSize);
 
 	void setBackgroundColor(SDL_Color color);
 	void setHoverColor(SDL_Color color);
 	void setFontColor(SDL_Color color);
 	void setSelectColor(SDL_Color color);
-	void setTextFontSize(FontSize size);
-	void setButtonFontSize(FontSize size);
+	void setTextFont(TTF_Font* font);
+	void setButtonFont(TTF_Font* font);
 
 	void setCustomTexture(SDL_Texture* texture);
 	void setCustomHoverTexture(SDL_Texture* texture);
@@ -36,7 +36,6 @@ private:
 
 	std::string _text;
 	SDL_Rect _position;
-	Fonts* _fonts;
 
 	SDL_Color _backGroundColor;
 	SDL_Color _hoverColor;

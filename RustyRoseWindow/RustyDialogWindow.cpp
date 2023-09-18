@@ -1,6 +1,6 @@
 #include "RustyDialogWindow.h"
 
-RustyDialogWindow::RustyDialogWindow(std::string text, int windowWidth, int windowHeight, Fonts* fonts, SDL_Renderer* renderer, ScreenSize screenSize)
+RustyDialogWindow::RustyDialogWindow(std::string text, int windowWidth, int windowHeight, TTF_Font* textFont, TTF_Font* buttonFont, SDL_Renderer* renderer, ScreenSize screenSize)
 {
 	this->_text = text;
 
@@ -9,7 +9,6 @@ RustyDialogWindow::RustyDialogWindow(std::string text, int windowWidth, int wind
 	this->_position.x = (screenSize.Width / 2) - (windowWidth / 2);
 	this->_position.y = (screenSize.Height / 2) - (windowHeight / 2);
 
-	this->_fonts = fonts;
 	this->_renderer = renderer;
 	
 	this->_selectIndex = 0;
@@ -19,8 +18,8 @@ RustyDialogWindow::RustyDialogWindow(std::string text, int windowWidth, int wind
 	this->_fontColor = { 0xff, 0xff, 0xff, 0xff };
 	this->_selectColor = { 0xff ,0x00, 0x00, 0xff };
 
-	this->textFont = fonts->Medium;
-	this->buttonFont = fonts->Small;
+	this->textFont = textFont;
+	this->buttonFont = buttonFont;
 
 	this->_positionButton1.w = windowWidth / 3;
 	this->_positionButton1.h = windowHeight / 4;
@@ -57,30 +56,14 @@ void RustyDialogWindow::setSelectColor(SDL_Color color)
 	this->_selectColor = color;
 }
 
-void RustyDialogWindow::setTextFontSize(FontSize size)
+void RustyDialogWindow::setTextFont(TTF_Font* font)
 {
-	if (size == FontSize::Small) {
-		this->textFont = this->_fonts->Small;
-	}
-	else if (size == FontSize::Medium) {
-		this->textFont = this->_fonts->Medium;
-	}
-	else if (size == FontSize::Large) {
-		this->textFont = this->_fonts->Large;
-	}
+	this->textFont = font;
 }
 
-void RustyDialogWindow::setButtonFontSize(FontSize size)
+void RustyDialogWindow::setButtonFont(TTF_Font* font)
 {
-	if (size == FontSize::Small) {
-		this->buttonFont = this->_fonts->Small;
-	}
-	else if (size == FontSize::Medium) {
-		this->buttonFont = this->_fonts->Medium;
-	}
-	else if (size == FontSize::Large) {
-		this->buttonFont = this->_fonts->Large;
-	}
+	this->buttonFont = font;
 }
 
 void RustyDialogWindow::setCustomTexture(SDL_Texture* texture)
