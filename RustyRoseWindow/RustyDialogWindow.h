@@ -17,12 +17,12 @@ public:
 	void setCustomHoverTexture(SDL_Texture* texture);
 	void setCustomPositionOfButtons(SDL_Rect button1, SDL_Rect button2);
 
-	void moveWindow(int vecx, int vecy);
+	void move(int vecx, int vecy);
 	void changeSelect(int vecx);
-	void enter();
+	int enter();
 
 	void make();
-	bool show();
+	void draw();
 
 	~RustyDialogWindow();
 
@@ -51,9 +51,6 @@ private:
 	SDL_Texture* _texture;
 	SDL_Texture* _textureHover;
 
-	RustyControl _control;
-
-	void _checkControl();
 	void _updateHoverTexture();
 };
 

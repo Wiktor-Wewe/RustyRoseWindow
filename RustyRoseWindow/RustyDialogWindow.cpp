@@ -82,13 +82,13 @@ void RustyDialogWindow::setCustomPositionOfButtons(SDL_Rect button1, SDL_Rect bu
 	this->_positionButton2 = button2;
 }
 
-void RustyDialogWindow::moveWindow(int vecx, int vecy)
+void RustyDialogWindow::move(int vecx, int vecy)
 {
-	if (this->_position.x + this->_position.w + vecx < 1280 && this->_position.x >= 0) {
+	if (this->_position.x + this->_position.w + vecx < 1280 && this->_position.x > 0) {
 		this->_position.x += vecx;
 	}
 
-	if (this->_position.y + this->_position.h + vecy < 720 && this->_position.y >= 0) {
+	if (this->_position.y + this->_position.h + vecy < 720 && this->_position.y > 0) {
 		this->_position.y += vecy;
 	}
 }
@@ -101,13 +101,12 @@ void RustyDialogWindow::changeSelect(int vecx)
 	else if (vecx < 0) {
 		this->_selectIndex = 1;
 	}
+	this->_updateHoverTexture();
 }
 
-void RustyDialogWindow::enter()
+int RustyDialogWindow::enter()
 {
-	if (this->_selectIndex > 0) {
-		this->_end = true;
-	}
+	return this->_selectIndex;
 }
 
 void RustyDialogWindow::make()
@@ -162,44 +161,15 @@ void RustyDialogWindow::make()
 	SDL_SetRenderTarget(this->_renderer, NULL);
 }
 
-bool RustyDialogWindow::show()
+void RustyDialogWindow::draw()
 {
+	auto oldTarget = SDL_GetRenderTarget(this->_renderer);
+
 	SDL_SetRenderTarget(this->_renderer, NULL);
-	SDL_SetRenderDrawColor(this->_renderer, 0x00, 0x00, 0x00, 0xff);
+	SDL_RenderCopy(this->_renderer, this->_mainTexture, NULL, &this->_position);
+	SDL_RenderCopy(this->_renderer, this->_mainTextureHover, NULL, &this->_position);
 
-	SDL_Event e;
-	while (!this->_end) {
-		while (SDL_PollEvent(&e) != 0) {
-			if (e.type == SDL_QUIT) {
-				this->_end = true;
-			}
-			else if (e.type == SDL_KEYDOWN) {
-				if (e.key.keysym.sym == SDLK_RIGHT)
-					this->_control.add(RustyControl::Action::next);
-				else if (e.key.keysym.sym == SDLK_LEFT)
-					this->_control.add(RustyControl::Action::back);
-				else if (e.key.keysym.sym == SDLK_RETURN)
-					this->_control.add(RustyControl::Action::enter);
-				else if (e.key.keysym.sym == SDLK_w)
-					this->_control.add(RustyControl::Action::up);
-				else if (e.key.keysym.sym == SDLK_s)
-					this->_control.add(RustyControl::Action::down);
-				else if (e.key.keysym.sym == SDLK_a)
-					this->_control.add(RustyControl::Action::left);
-				else if (e.key.keysym.sym == SDLK_d)
-					this->_control.add(RustyControl::Action::right);
-			}
-		}
-
-		SDL_RenderClear(this->_renderer);
-		SDL_RenderCopy(this->_renderer, this->_mainTexture, NULL, &this->_position);
-		this->_checkControl();
-		this->_updateHoverTexture();
-		SDL_RenderCopy(this->_renderer, this->_mainTextureHover, NULL, &this->_position);
-		SDL_RenderPresent(this->_renderer);
-	}
-
-	return this->_selectIndex == 1 ? true : false;
+	SDL_SetRenderTarget(this->_renderer, oldTarget);
 }
 
 RustyDialogWindow::~RustyDialogWindow()
@@ -208,34 +178,6 @@ RustyDialogWindow::~RustyDialogWindow()
 	SDL_DestroyTexture(this->_mainTextureHover);
 	SDL_DestroyTexture(this->_texture);
 	SDL_DestroyTexture(this->_textureHover);
-}
-
-void RustyDialogWindow::_checkControl()
-{
-	if (this->_control.isAction()) {
-		if (this->_control.check(RustyControl::Action::back)) {
-			this->_selectIndex = 1;
-		}
-		if (this->_control.check(RustyControl::Action::next)) {
-			this->_selectIndex = 2;
-		}
-		if (this->_control.check(RustyControl::Action::enter)) {
-			this->enter();
-		}
-		if (this->_control.check(RustyControl::Action::up)) {
-			this->moveWindow(0, -5);
-		}
-		if (this->_control.check(RustyControl::Action::down)) {
-			this->moveWindow(0, 5);
-		}
-		if (this->_control.check(RustyControl::Action::left)) {
-			this->moveWindow(-5, 0);
-		}
-		if (this->_control.check(RustyControl::Action::right)) {
-			this->moveWindow(5, 0);
-		}
-		this->_control.clear();
-	}
 }
 
 void RustyDialogWindow::_updateHoverTexture()

@@ -14,7 +14,11 @@ public:
 	void setTextPosition(int x, int y);
 	void setBackGroundColor(SDL_Color color);
 	void setHoverColor(SDL_Color color);
+	void setSelectHoverColor(SDL_Color color);
 	void setHover(bool isSelected);
+
+	void setCustomTexture(SDL_Texture* texture);
+	void setCustomHoverTexture(SDL_Texture* texture);
 
 	void make();
 	
@@ -42,6 +46,7 @@ private:
 
 	SDL_Color _backGroundColor;
 	SDL_Color _hoverColor;
+	SDL_Color _selectHoverColor;
 
 	SDL_Texture* _mainTexture;
 	SDL_Texture* _hoverTexture;

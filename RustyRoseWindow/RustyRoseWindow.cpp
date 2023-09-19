@@ -73,10 +73,10 @@ int main(int argc, char* args[]) {
     ScreenSize screenSize(1280, 720);
 
     std::string text = "Are you sure you want to override save file?";
-    RustyDialogWindow dialogWindow(text, 500, 230, fonts.Medium, fonts.Small, renderer, screenSize);
-    dialogWindow.setTextFont(fonts.Large);
-    dialogWindow.setButtonFont(fonts.Medium);
-    dialogWindow.make();
+    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, 500, 230, fonts.Medium, fonts.Small, renderer, screenSize);
+    dialogWindow->setTextFont(fonts.Large);
+    dialogWindow->setButtonFont(fonts.Medium);
+    dialogWindow->make();
 
     RustyButton button1(renderer, fonts.Medium, 1, "guzik numer 1", 200, 100, &screenSize);
     button1.setPosition(screenSize.Width - button1.getPosition()->w, 0);
@@ -87,13 +87,19 @@ int main(int argc, char* args[]) {
     button2.make();
 
 
-    std::string repsponse = dialogWindow.show() ? "True" : "False";
-    SDL_Rect* responseSize = new SDL_Rect();
-    SDL_Texture* reposneTexture = makeTextureFromText(repsponse, responseSize, fonts.Large, { 0xff, 0xff, 0xff, 0xff }, { 0xff, 0x00, 0xff, 0xff }, renderer, screenSize.Width);
-    responseSize->x = (screenSize.Width / 2) - (responseSize->w / 2);
-    responseSize->y = (screenSize.Height / 2) - (responseSize->h / 2);
+    RustyMiniWindow* miniWindow = new RustyMiniWindow(800, 480, fonts.Medium, renderer, &screenSize);
+    miniWindow->addText("Siema to test", 100, 100);
+    miniWindow->addButton("Przycisk 1", 1, 80, 20, fonts.Small);
+    miniWindow->getButton(1)->setHover(true);
+    miniWindow->addButton("Przycisk 2", 2, 200, 50, fonts.Medium);
+    miniWindow->getButton(2)->setHover(true);
+    miniWindow->getButton(2)->setBackGroundColor({ 0xff, 0x00, 0xff, 0x90 });
+    miniWindow->getButton(2)->setPosition(20, 20);
+    miniWindow->getButton(2)->make();
+    miniWindow->make();
 
     int change = 0;
+    int endMiniWindow = 0;
     bool hover = true;
 
     bool quit = false;
@@ -106,29 +112,37 @@ int main(int argc, char* args[]) {
         }
 
         SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, reposneTexture, NULL, responseSize);
-        SDL_RenderCopy(renderer, button1.getTexture(), NULL, button1.getPosition());
-        SDL_RenderCopy(renderer, button2.getTexture(), NULL, button2.getPosition());
+        if(miniWindow) miniWindow->draw();
+        if (dialogWindow) dialogWindow->draw();
         SDL_RenderPresent(renderer);
         
         change++;
         if (change > 500) {
             if (hover) {
                 hover = false;
+                if (dialogWindow) dialogWindow->changeSelect(-1);
             }
             else {
                 hover = true;
+                if (dialogWindow) dialogWindow->changeSelect(1);
             }
             change = 0;
         }
 
-        button1.setHover(hover);
-        button2.setHover(!hover);
-
+        if (miniWindow) {
+            miniWindow->getButton(1)->setHover(hover);
+            miniWindow->getButton(2)->setHover(!hover);
+        }
+        
+        endMiniWindow++;
+        if (endMiniWindow > 5000) {
+            delete miniWindow;
+            miniWindow = nullptr;
+            delete dialogWindow;
+            dialogWindow = nullptr;
+        }
     }
 
-    SDL_DestroyTexture(reposneTexture);
-    delete responseSize;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

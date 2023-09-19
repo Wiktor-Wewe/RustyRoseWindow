@@ -23,6 +23,7 @@ RustyButton::RustyButton(SDL_Renderer* renderer, TTF_Font* font, int id, std::st
 
 	this->_backGroundColor = { 0x00, 0x00, 0x00, 0xff };
 	this->_hoverColor = { 0xff, 0x99, 0x00, 0xff };
+	this->_selectHoverColor = { 0xff, 0x00, 0x00, 0xff };
 
 	this->_mainTexture = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, this->_position->w, this->_position->h);
 	this->_hoverTexture = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, this->_position->w, this->_position->h);
@@ -77,6 +78,11 @@ void RustyButton::setHoverColor(SDL_Color color)
 	this->_hoverColor = color;
 }
 
+void RustyButton::setSelectHoverColor(SDL_Color color)
+{
+	this->_selectHoverColor = color;
+}
+
 void RustyButton::setHover(bool isSelected)
 {
 	this->_isSelected = isSelected;
@@ -94,17 +100,25 @@ void RustyButton::make()
 	SDL_SetRenderDrawColor(this->_renderer, this->_backGroundColor.r, this->_backGroundColor.g, this->_backGroundColor.b, this->_backGroundColor.a);
 	SDL_RenderClear(this->_renderer);
 
-	// draw text on main texture
+	// draw text and hover on main texture
 	SDL_Texture* textTexture = makeTextureFromText(this->_text, this->_textPosition, this->_font, this->_textColor, this->_textHoverColor, this->_renderer, this->_position->w);
 	this->_textPosition->x = (this->_position->w / 2) - (this->_textPosition->w / 2);
 	this->_textPosition->y = (this->_position->h / 2) - (this->_textPosition->h / 2);
 	SDL_RenderCopy(this->_renderer, textTexture, NULL, this->_textPosition);
-
-	// draw hover on texture
-	SDL_SetRenderTarget(this->_renderer, this->_hoverTexture);
+	// hover
+	SDL_SetRenderTarget(this->_renderer, this->_mainTexture);
 	SDL_RenderCopy(this->_renderer, this->_mainTexture, NULL, NULL);
 	SDL_SetRenderDrawColor(this->_renderer, this->_hoverColor.r, this->_hoverColor.g, this->_hoverColor.b, this->_hoverColor.a);
 	SDL_Rect* hoverPosition = new SDL_Rect { 0, 0, this->_position->w, this->_position->h };
+	SDL_RenderDrawRect(this->_renderer, hoverPosition);
+	hoverPosition->x++; hoverPosition->y++; hoverPosition->w--; hoverPosition->h--;
+	SDL_RenderDrawRect(this->_renderer, hoverPosition);
+
+	// draw select hover on texture
+	SDL_SetRenderTarget(this->_renderer, this->_hoverTexture);
+	SDL_RenderCopy(this->_renderer, this->_mainTexture, NULL, NULL);
+	SDL_SetRenderDrawColor(this->_renderer, this->_selectHoverColor.r, this->_selectHoverColor.g, this->_selectHoverColor.b, this->_selectHoverColor.a);
+	hoverPosition = new SDL_Rect{ 0, 0, this->_position->w, this->_position->h };
 	SDL_RenderDrawRect(this->_renderer, hoverPosition);
 	hoverPosition->x++; hoverPosition->y++; hoverPosition->w--; hoverPosition->h--;
 	SDL_RenderDrawRect(this->_renderer, hoverPosition);

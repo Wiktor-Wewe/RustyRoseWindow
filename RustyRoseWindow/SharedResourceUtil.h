@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "RustyControl.h"
+#include <vector>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
