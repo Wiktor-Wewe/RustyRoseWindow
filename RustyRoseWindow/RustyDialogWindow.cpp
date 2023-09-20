@@ -111,6 +111,11 @@ int RustyDialogWindow::enter()
 
 void RustyDialogWindow::make()
 {
+	// get old parameters
+	SDL_Color oldColor;
+	SDL_GetRenderDrawColor(this->_renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
+	auto oldTarget = SDL_GetRenderTarget(this->_renderer);
+
 	// draw background of window
 	SDL_SetRenderDrawColor(this->_renderer, this->_backGroundColor.r, this->_backGroundColor.g, this->_backGroundColor.b, this->_backGroundColor.a);
 	SDL_SetRenderTarget(this->_renderer, this->_mainTexture);
@@ -157,8 +162,10 @@ void RustyDialogWindow::make()
 	SDL_SetRenderTarget(this->_renderer, this->_mainTextureHover);
 	SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 0);
 	SDL_RenderClear(this->_renderer);
-
-	SDL_SetRenderTarget(this->_renderer, NULL);
+	
+	// set old parameters
+	SDL_SetRenderDrawColor(this->_renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+	SDL_SetRenderTarget(this->_renderer, oldTarget);
 }
 
 void RustyDialogWindow::draw()
@@ -182,6 +189,12 @@ RustyDialogWindow::~RustyDialogWindow()
 
 void RustyDialogWindow::_updateHoverTexture()
 {
+	// get old parameters
+	SDL_Color oldColor;
+	SDL_GetRenderDrawColor(this->_renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
+	auto oldTarget = SDL_GetRenderTarget(this->_renderer);
+
+	// do stuff
 	SDL_SetRenderDrawColor(this->_renderer, 0, 0, 0, 0);
 	SDL_SetRenderTarget(this->_renderer, this->_mainTextureHover);
 	SDL_RenderClear(this->_renderer);
@@ -195,6 +208,7 @@ void RustyDialogWindow::_updateHoverTexture()
 		SDL_RenderDrawRect(this->_renderer, &this->_positionButton2);
 	}
 
-	SDL_SetRenderTarget(this->_renderer, NULL);
-	SDL_SetRenderDrawColor(this->_renderer, 0x00, 0x00, 0x00, 0xff);
+	// set old parameters
+	SDL_SetRenderDrawColor(this->_renderer, oldColor.r, oldColor.g, oldColor.b, oldColor.a);
+	SDL_SetRenderTarget(this->_renderer, oldTarget);
 }

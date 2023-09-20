@@ -1,38 +1,16 @@
 #include "RustyControl.h"
 
-RustyControl::RustyControl()
+void RustyControl::addKeyFunction(SDL_Keycode key, std::function<void()> function)
 {
-	this->_status = false;
+	this->_keyFunctions[key] = function;
 }
 
-void RustyControl::add(Action x)
+void RustyControl::handle(SDL_Event event)
 {
-	this->_status = true;
-	this->_pressedKeys.push_back(x);
-}
-
-void RustyControl::clear()
-{
-	this->_status = false;
-	this->_pressedKeys.clear();
-}
-
-bool RustyControl::check(Action x)
-{
-	for (auto i : this->_pressedKeys) {
-		if (i == x) {
-			return true;
-		}
-	}
-	return false;
-}
-
-bool RustyControl::isAction()
-{
-	return this->_status;
-}
-
-RustyControl::~RustyControl()
-{
-	this->_pressedKeys.clear();
+    if (event.type == SDL_KEYDOWN) {
+        auto it = this->_keyFunctions.find(event.key.keysym.sym);
+        if (it != this->_keyFunctions.end()) {
+            it->second();
+        }
+    }
 }

@@ -20,6 +20,7 @@ RustyMiniWindow::RustyMiniWindow(int width, int height, TTF_Font* defaultFont, S
 
 	this->_texture = SDL_CreateTexture(this->_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, this->_position->w, this->_position->h);
 	SDL_SetTextureBlendMode(this->_texture, SDL_BLENDMODE_BLEND);
+	this->_customTexture = NULL;
 }
 
 void RustyMiniWindow::setPosition(int x, int y)
@@ -57,6 +58,11 @@ void RustyMiniWindow::setFontColor(SDL_Color color)
 void RustyMiniWindow::setFontHoverColor(SDL_Color color)
 {
 	this->_fontHoverColor = color;
+}
+
+void RustyMiniWindow::setCustomTexture(SDL_Texture* texture)
+{
+	this->_customTexture = texture;
 }
 
 void RustyMiniWindow::addText(std::string text, int x, int y, TTF_Font* font)
@@ -135,15 +141,22 @@ void RustyMiniWindow::make()
 	SDL_GetRenderDrawColor(this->_renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
 	auto oldTarget = SDL_GetRenderTarget(this->_renderer);
 
-	// make window background
-	SDL_SetRenderDrawColor(this->_renderer, this->_backGroundColor.r, this->_backGroundColor.g, this->_backGroundColor.b, this->_backGroundColor.a);
-	SDL_SetRenderTarget(this->_renderer, this->_texture);
-	SDL_RenderClear(this->_renderer);
-	
-	// make window hover
-	SDL_SetRenderDrawColor(this->_renderer, this->_windowHoverColor.r, this->_windowHoverColor.g, this->_windowHoverColor.b, this->_windowHoverColor.a);
-	SDL_Rect hoverRect { 0, 0, this->_position->w, this->_position->h };
-	SDL_RenderDrawRect(this->_renderer, &hoverRect);
+	if (this->_customTexture) {
+		// draw custom texture on window backgroud
+		SDL_SetRenderTarget(this->_renderer, this->_texture);
+		SDL_RenderCopy(this->_renderer, this->_customTexture, NULL, NULL);
+	}
+	else {
+		// make window background
+		SDL_SetRenderDrawColor(this->_renderer, this->_backGroundColor.r, this->_backGroundColor.g, this->_backGroundColor.b, this->_backGroundColor.a);
+		SDL_SetRenderTarget(this->_renderer, this->_texture);
+		SDL_RenderClear(this->_renderer);
+
+		// make window hover
+		SDL_SetRenderDrawColor(this->_renderer, this->_windowHoverColor.r, this->_windowHoverColor.g, this->_windowHoverColor.b, this->_windowHoverColor.a);
+		SDL_Rect hoverRect{ 0, 0, this->_position->w, this->_position->h };
+		SDL_RenderDrawRect(this->_renderer, &hoverRect);
+	}
 
 	// draw text on texture
 	for (auto text : this->_text) {

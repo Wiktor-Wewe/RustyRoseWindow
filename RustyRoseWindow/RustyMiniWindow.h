@@ -56,5 +56,6 @@ private:
 	std::vector<RustyButton*> _buttons;
 
 	SDL_Texture* _texture;
+	SDL_Texture* _customTexture;
 };
 

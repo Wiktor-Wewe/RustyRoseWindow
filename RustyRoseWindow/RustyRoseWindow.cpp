@@ -4,9 +4,37 @@
 #include <SDL_ttf.h>
 #include "RustyDialogWindow.h"
 #include "RustyMiniWindow.h"
+#include "RustyControl.h"
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
+
+RustyMiniWindow* miniWindow;
+
+void pressW() {
+    miniWindow->move(0, -1);
+}
+
+void pressS() {
+    miniWindow->move(0, 1);
+}
+
+void pressA() {
+    miniWindow->move(-1, 0);
+}
+
+void pressD() {
+    miniWindow->move(1, 0);
+}
+
+// todo
+// poprawic move na pewno w miniWindow i chyba w dialogWindow
+// to ze zacina sie gdy wyjade za mocno na boki
+// gdy chce przesunac o 5 ale maksymalnie ekranu zostalo mi 4, to uciac 1 z 5 i przesunac
+// dodac glowne okno z window managerem (RustyRenderWindow)
+// zronic scene?
+// zooptymalizowac mini window i dialog window
+// dodac obsluge myszki
 
 int main(int argc, char* args[]) {
     
@@ -52,6 +80,9 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
+    const char* pathToImg = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\SAVE.PNG";
+    SDL_Surface* sampleSurface = IMG_Load(pathToImg);
+    SDL_Texture* sampleTexture = SDL_CreateTextureFromSurface(renderer, sampleSurface);
 
     const char fontPath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\arial.ttf";
     TTF_Font* fontSmall = TTF_OpenFont(fontPath, 12);
@@ -87,21 +118,31 @@ int main(int argc, char* args[]) {
     button2.make();
 
 
-    RustyMiniWindow* miniWindow = new RustyMiniWindow(800, 480, fonts.Medium, renderer, &screenSize);
+    miniWindow = new RustyMiniWindow(800, 480, fonts.Medium, renderer, &screenSize);
     miniWindow->addText("Siema to test", 100, 100);
     miniWindow->addButton("Przycisk 1", 1, 80, 20, fonts.Small);
     miniWindow->getButton(1)->setHover(true);
     miniWindow->addButton("Przycisk 2", 2, 200, 50, fonts.Medium);
     miniWindow->getButton(2)->setHover(true);
-    miniWindow->getButton(2)->setBackGroundColor({ 0xff, 0x00, 0xff, 0x90 });
+    miniWindow->getButton(2)->setBackGroundColor({ 0xff, 0x00, 0xff, 0xff });
     miniWindow->getButton(2)->setPosition(20, 20);
+    miniWindow->setCustomTexture(sampleTexture);
     miniWindow->getButton(2)->make();
     miniWindow->make();
 
     int change = 0;
     int endMiniWindow = 0;
     bool hover = true;
+    
 
+
+    RustyControl control;
+    control.addKeyFunction(SDLK_w, pressW);
+    control.addKeyFunction(SDLK_s, pressS);
+    control.addKeyFunction(SDLK_a, pressA);
+    control.addKeyFunction(SDLK_d, pressD);
+
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
     bool quit = false;
     SDL_Event e;
     while (!quit) {
@@ -109,40 +150,37 @@ int main(int argc, char* args[]) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             }
+            else {
+                control.handle(e);
+            }
         }
 
         SDL_RenderClear(renderer);
-        if(miniWindow) miniWindow->draw();
-        if (dialogWindow) dialogWindow->draw();
+        miniWindow->draw();
+        dialogWindow->draw();
         SDL_RenderPresent(renderer);
+
         
         change++;
         if (change > 500) {
             if (hover) {
                 hover = false;
-                if (dialogWindow) dialogWindow->changeSelect(-1);
+                dialogWindow->changeSelect(-1);
             }
             else {
                 hover = true;
-                if (dialogWindow) dialogWindow->changeSelect(1);
+                dialogWindow->changeSelect(1);
             }
             change = 0;
         }
 
-        if (miniWindow) {
-            miniWindow->getButton(1)->setHover(hover);
-            miniWindow->getButton(2)->setHover(!hover);
-        }
+        miniWindow->getButton(1)->setHover(hover);
+        miniWindow->getButton(2)->setHover(!hover);
         
-        endMiniWindow++;
-        if (endMiniWindow > 5000) {
-            delete miniWindow;
-            miniWindow = nullptr;
-            delete dialogWindow;
-            dialogWindow = nullptr;
-        }
     }
 
+    delete miniWindow;
+    delete dialogWindow;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
