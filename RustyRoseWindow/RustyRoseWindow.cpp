@@ -5,6 +5,7 @@
 #include "RustyDialogWindow.h"
 #include "RustyMiniWindow.h"
 #include "RustyControl.h"
+#include "RustyScene.h"
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
@@ -127,6 +128,7 @@ int main(int argc, char* args[]) {
     miniWindow->getButton(2)->setBackGroundColor({ 0xff, 0x00, 0xff, 0xff });
     miniWindow->getButton(2)->setPosition(20, 20);
     miniWindow->setCustomTexture(sampleTexture);
+    miniWindow->setCustomTexture(NULL);
     miniWindow->getButton(2)->make();
     miniWindow->make();
 
@@ -134,7 +136,7 @@ int main(int argc, char* args[]) {
     int endMiniWindow = 0;
     bool hover = true;
     
-
+    RustyScene scene(renderer, fonts.Medium, &screenSize);
 
     RustyControl control;
     control.addKeyFunction(SDLK_w, pressW);
@@ -143,6 +145,8 @@ int main(int argc, char* args[]) {
     control.addKeyFunction(SDLK_d, pressD);
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
+
+    int dialogNumber = 0;
     bool quit = false;
     SDL_Event e;
     while (!quit) {
@@ -158,6 +162,7 @@ int main(int argc, char* args[]) {
         SDL_RenderClear(renderer);
         miniWindow->draw();
         dialogWindow->draw();
+        scene.draw();
         SDL_RenderPresent(renderer);
 
         
@@ -166,6 +171,18 @@ int main(int argc, char* args[]) {
             if (hover) {
                 hover = false;
                 dialogWindow->changeSelect(-1);
+                scene.addDialog("Dialog: " + std::to_string(dialogNumber));
+                scene.removeDialog("Dialog: " + std::to_string(dialogNumber - 1));
+                dialogNumber++;
+                if (dialogNumber % 3 == 0) {
+                    scene.setFont(fonts.Small);
+                }
+                if (dialogNumber % 3 == 1) {
+                    scene.setFont(fonts.Medium);
+                }
+                if (dialogNumber % 3 == 2) {
+                    scene.setFont(fonts.Large);
+                }
             }
             else {
                 hover = true;
@@ -177,6 +194,7 @@ int main(int argc, char* args[]) {
         miniWindow->getButton(1)->setHover(hover);
         miniWindow->getButton(2)->setHover(!hover);
         
+        SDL_Delay(1);
     }
 
     delete miniWindow;

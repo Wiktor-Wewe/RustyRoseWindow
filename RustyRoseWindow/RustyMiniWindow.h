@@ -5,17 +5,6 @@
 class RustyMiniWindow
 {
 public :
-	struct WindowText {
-		std::string text;
-		SDL_Texture* texture;
-		SDL_Rect* rect;
-
-		~WindowText() {
-			if (this->rect) delete this->rect;
-			if (this->texture) SDL_DestroyTexture(this->texture);
-		}
-	};
-
 	RustyMiniWindow(int width, int height, TTF_Font* defaultFont, SDL_Renderer* renderer, ScreenSize* screenSize);
 	void setPosition(int x, int y);
 	void setSize(int width, int height);
@@ -52,7 +41,7 @@ private:
 	SDL_Color _fontColor;
 	SDL_Color _fontHoverColor;
 
-	std::vector<WindowText*> _text;
+	std::vector<ImageText*> _text;
 	std::vector<RustyButton*> _buttons;
 
 	SDL_Texture* _texture;

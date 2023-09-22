@@ -36,6 +36,23 @@ struct ScreenSize {
     int Height;
 };
 
+struct ImageText {
+	std::string text;
+	SDL_Texture* texture = NULL;
+	SDL_Rect* rect = new SDL_Rect;
+
+	~ImageText() {
+		if (this->rect) delete this->rect;
+		if (this->texture) SDL_DestroyTexture(this->texture);
+	}
+};
+
+struct Image {
+	std::string path;
+	SDL_Texture* texture = NULL;
+	SDL_Rect* rect = NULL;
+};
+
 static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Font* font, SDL_Color textColor, SDL_Color outlineColor, SDL_Renderer* renderer, int wrapLength)
 {
 	auto renderTarget = SDL_GetRenderTarget(renderer);

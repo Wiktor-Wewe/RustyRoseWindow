@@ -67,15 +67,14 @@ void RustyMiniWindow::setCustomTexture(SDL_Texture* texture)
 
 void RustyMiniWindow::addText(std::string text, int x, int y, TTF_Font* font)
 {
-	WindowText* windowText = new WindowText;
-	windowText->text = text;
-	windowText->rect = new SDL_Rect;
-	windowText->rect->x = x;
-	windowText->rect->y = y;
+	ImageText* imageText = new ImageText;
+	imageText->text = text;
+	imageText->rect->x = x;
+	imageText->rect->y = y;
 	auto windowFont = font == NULL ? this->_defaultFont : font;
-	windowText->texture = makeTextureFromText(text, windowText->rect, windowFont, this->_fontColor, this->_fontHoverColor, this->_renderer, this->_position->w);
+	imageText->texture = makeTextureFromText(text, imageText->rect, windowFont, this->_fontColor, this->_fontHoverColor, this->_renderer, this->_position->w);
 
-	this->_text.push_back(windowText);
+	this->_text.push_back(imageText);
 }
 
 void RustyMiniWindow::removeText(std::string text)
