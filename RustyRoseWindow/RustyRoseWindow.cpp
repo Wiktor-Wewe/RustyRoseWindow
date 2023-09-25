@@ -3,29 +3,30 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include "RustyDialogWindow.h"
-#include "RustyMiniWindow.h"
 #include "RustyControl.h"
 #include "RustyScene.h"
+#include "RustyWindow.h"
+#include "RustyWindowsManager.h"
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
-RustyMiniWindow* miniWindow;
+RustyDialogWindow* dialogWindow;
 
 void pressW() {
-    miniWindow->move(0, -1);
+    dialogWindow->move(0, -1);
 }
 
 void pressS() {
-    miniWindow->move(0, 1);
+    dialogWindow->move(0, 1);
 }
 
 void pressA() {
-    miniWindow->move(-1, 0);
+    dialogWindow->move(-1, 0);
 }
 
 void pressD() {
-    miniWindow->move(1, 0);
+    dialogWindow->move(1, 0);
 }
 
 // todo
@@ -105,38 +106,16 @@ int main(int argc, char* args[]) {
     ScreenSize screenSize(1280, 720);
 
     std::string text = "Are you sure you want to override save file?";
-    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, 500, 230, fonts.Medium, fonts.Small, renderer, screenSize);
-    dialogWindow->setTextFont(fonts.Large);
-    dialogWindow->setButtonFont(fonts.Medium);
-    dialogWindow->make();
-
-    RustyButton button1(renderer, fonts.Medium, 1, "guzik numer 1", 200, 100, &screenSize);
-    button1.setPosition(screenSize.Width - button1.getPosition()->w, 0);
-    button1.make();
-
-    RustyButton button2(renderer, fonts.Small, 1, "guzik numer 2", 200, 100, &screenSize);
-    button2.setPosition(0, 0);
-    button2.make();
-
-
-    miniWindow = new RustyMiniWindow(800, 480, fonts.Medium, renderer, &screenSize);
-    miniWindow->addText("Siema to test", 100, 100);
-    miniWindow->addButton("Przycisk 1", 1, 80, 20, fonts.Small);
-    miniWindow->getButton(1)->setHover(true);
-    miniWindow->addButton("Przycisk 2", 2, 200, 50, fonts.Medium);
-    miniWindow->getButton(2)->setHover(true);
-    miniWindow->getButton(2)->setBackGroundColor({ 0xff, 0x00, 0xff, 0xff });
-    miniWindow->getButton(2)->setPosition(20, 20);
-    miniWindow->setCustomTexture(sampleTexture);
-    miniWindow->setCustomTexture(NULL);
-    miniWindow->getButton(2)->make();
-    miniWindow->make();
+    dialogWindow = new RustyDialogWindow(text, renderer, &screenSize, fonts.Medium, fontSmall, 600, 400);
 
     int change = 0;
     int endMiniWindow = 0;
     bool hover = true;
     
-    RustyScene scene(renderer, fonts.Medium, &screenSize);
+    RustyScene scene(renderer, fonts.Large, &screenSize);
+    RustyWindowsManager manager(renderer);
+    manager.addWindow(dialogWindow);
+    dialogWindow->setPosition(50, 60);
 
     RustyControl control;
     control.addKeyFunction(SDLK_w, pressW);
@@ -145,6 +124,10 @@ int main(int argc, char* args[]) {
     control.addKeyFunction(SDLK_d, pressD);
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
+
+    RustyWindow* rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
+    rustyWindow->addText("wiktor", 200, 50, fonts.Large);
+    manager.addWindow(rustyWindow);
 
     int dialogNumber = 0;
     bool quit = false;
@@ -160,44 +143,29 @@ int main(int argc, char* args[]) {
         }
 
         SDL_RenderClear(renderer);
-        miniWindow->draw();
-        dialogWindow->draw();
+        manager.draw();
         scene.draw();
         SDL_RenderPresent(renderer);
 
-        
+        dialogWindow->setCursor(1);
         change++;
         if (change > 500) {
             if (hover) {
                 hover = false;
-                dialogWindow->changeSelect(-1);
-                scene.addDialog("Dialog: " + std::to_string(dialogNumber));
-                scene.removeDialog("Dialog: " + std::to_string(dialogNumber - 1));
-                dialogNumber++;
-                if (dialogNumber % 3 == 0) {
-                    scene.setFont(fonts.Small);
-                }
-                if (dialogNumber % 3 == 1) {
-                    scene.setFont(fonts.Medium);
-                }
-                if (dialogNumber % 3 == 2) {
-                    scene.setFont(fonts.Large);
-                }
+                dialogWindow->moveCursor(-1);
             }
             else {
                 hover = true;
-                dialogWindow->changeSelect(1);
+                dialogWindow->moveCursor(1);
             }
             change = 0;
+            scene.clear(RustyScene::Clear::Dialogs);
+            scene.addDialog("Selected index: " + std::to_string(dialogWindow->getSelectedId()));
         }
-
-        miniWindow->getButton(1)->setHover(hover);
-        miniWindow->getButton(2)->setHover(!hover);
         
         SDL_Delay(1);
     }
 
-    delete miniWindow;
     delete dialogWindow;
 
     SDL_DestroyRenderer(renderer);

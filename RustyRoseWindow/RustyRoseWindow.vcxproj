@@ -150,18 +150,20 @@
     <ClCompile Include="RustyButton.cpp" />
     <ClCompile Include="RustyControl.cpp" />
     <ClCompile Include="RustyDialogWindow.cpp" />
-    <ClCompile Include="RustyMiniWindow.cpp" />
     <ClCompile Include="RustyRenderWindow.cpp" />
     <ClCompile Include="RustyRoseWindow.cpp" />
     <ClCompile Include="RustyScene.cpp" />
+    <ClCompile Include="RustyWindow.cpp" />
+    <ClCompile Include="RustyWindowsManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RustyButton.h" />
     <ClInclude Include="RustyControl.h" />
     <ClInclude Include="RustyDialogWindow.h" />
-    <ClInclude Include="RustyMiniWindow.h" />
     <ClInclude Include="RustyRenderWindow.h" />
     <ClInclude Include="RustyScene.h" />
+    <ClInclude Include="RustyWindow.h" />
+    <ClInclude Include="RustyWindowsManager.h" />
     <ClInclude Include="SharedResourceUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

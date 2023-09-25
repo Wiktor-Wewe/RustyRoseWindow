@@ -23,7 +23,7 @@ public:
 	void addDialog(std::string dialog);
 	void removeDialog(std::string dialog);
 
-	void addText(std::string text, int x, int y, SDL_Color color, SDL_Color hoverColor, TTF_Font* font = nullptr, int maxLineSize = 0);
+	void addText(std::string text, int x, int y, SDL_Color color, SDL_Color hoverColor, TTF_Font* font = NULL, int maxLineSize = 0);
 	void removeText(std::string text);
 
 	void addImage(std::string path, SDL_Texture* texture, SDL_Rect* rect, int layer = 0);

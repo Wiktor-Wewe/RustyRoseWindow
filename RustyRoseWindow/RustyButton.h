@@ -1,54 +1,54 @@
 #pragma once
 #include "SharedResourceUtil.h"
+#include <functional>
 
 class RustyButton
 {
 public:
-	RustyButton(SDL_Renderer* renderer, TTF_Font* font, int id, std::string text, int width, int height, ScreenSize* screenSize);
+	RustyButton(int id, SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Font* font, int x, int y, int width, int height);
 	void setPosition(int x, int y);
 	void setSize(int width, int height);
 	void setText(std::string text);
 	void setFont(TTF_Font* font);
-	void setTextColor(SDL_Color color);
-	void setTextHoverColor(SDL_Color color);
+	void setFontColor(SDL_Color color);
+	void setFontOutlineColor(SDL_Color color);
 	void setTextPosition(int x, int y);
-	void setBackGroundColor(SDL_Color color);
-	void setHoverColor(SDL_Color color);
+	void setBackgroundColor(SDL_Color color);
+	void setBorderColor(SDL_Color color);
 	void setSelectHoverColor(SDL_Color color);
-	void setHover(bool isSelected);
+	void setSelect(bool isSelected);
+
+	void setFunction(std::function<int()> function);
+	int makeFunction();
 
 	void setCustomTexture(SDL_Texture* texture);
 	void setCustomHoverTexture(SDL_Texture* texture);
-
-	void make();
 	
 	int getId();
-	SDL_Rect* getPosition();
-	SDL_Texture* getTexture();
-
 	void move(int vecx, int vecy);
+	void draw(SDL_Rect* windowPosition);
 
 	~RustyButton();
 
 private:
-	SDL_Renderer* _renderer;
-	ScreenSize* _screenSize;
-	bool _isSelected;
 	int _id;
 
-	SDL_Rect* _position;
-
+	SDL_Renderer* _renderer;
+	ScreenSize* _screenSize;
 	TTF_Font* _font;
-	std::string _text;
-	SDL_Color _textColor;
-	SDL_Color _textHoverColor;
-	SDL_Rect* _textPosition;
+	SDL_Rect* _position;
+	ImageText* _text;
+	bool _selected;
 
-	SDL_Color _backGroundColor;
-	SDL_Color _hoverColor;
+	std::function<int()> _function;
+
+	SDL_Color _backgroundColor;
+	SDL_Color _borderColor;
+	SDL_Color _fontColor;
+	SDL_Color _fontOutlineColor;
 	SDL_Color _selectHoverColor;
 
-	SDL_Texture* _mainTexture;
-	SDL_Texture* _hoverTexture;
+	SDL_Texture* _customTexture;
+	SDL_Texture* _customHoverTexture;
 };
 
