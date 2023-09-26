@@ -6,19 +6,30 @@ RustyWindow::RustyWindow(SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Fon
 	this->_renderer = renderer;
 	this->_screenSize = screenSize;
 	this->_font = font;
+
 	this->_position = new SDL_Rect;
 	this->_position->w = width;
 	this->_position->h = height;
+
 	this->_customTexture = NULL;
 	
 	this->_position->x = (this->_screenSize->Width / 2) - (this->_position->w / 2);
 	this->_position->y = (this->_screenSize->Height / 2) - (this->_position->h / 2);
 
-	this->_selectedId = -1;
+	this->_barPosition = new SDL_Rect;
+	this->_barPosition->w = this->_position->w;
+	this->_barPosition->h = 30;
+	this->_barPosition->x = this->_position->x;
+	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
+
+	this->_barAndWindowPosition = new SDL_Rect;
+
+	this->_selectedId = 0;
 	this->_backgroundColor = { 0x00, 0x00, 0x00, 0xff };
 	this->_borderColor = { 0xff, 0x99, 0x00, 0xff };
 	this->_fontColor = { 0xff, 0xff, 0xff,0xff };
 	this->_fontOutlineColor = { 0xff, 0x99, 0x00, 0xff };
+	this->_barColor = { 0x00, 0x00, 0x00, 0xff };
 	this->_selectHoverColor = { 0xff, 0x00, 0x00, 0xff };
 }
 
@@ -31,15 +42,21 @@ void RustyWindow::setPosition(int x, int y)
 {
 	this->_position->x = x;
 	this->_position->y = y;
+
+	this->_barPosition->x = this->_position->x;
+	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
 void RustyWindow::setSize(int width, int height)
 {
-	if(width > 0)
+	if (width > 0) {
 		this->_position->w = width;
+		this->_barPosition->w = this->_position->w;
+	}
 
-	if(height > 0)
+	if (height > 0) {
 		this->_position->h = height;
+	}
 }
 
 void RustyWindow::setBackgroundColor(SDL_Color color)
@@ -62,6 +79,11 @@ void RustyWindow::setFontOutlineColor(SDL_Color color)
 	this->_fontOutlineColor = color;
 }
 
+void RustyWindow::setBarColor(SDL_Color color)
+{
+	this->_barColor = color;
+}
+
 void RustyWindow::setSelectHoverColor(SDL_Color color)
 {
 	this->_selectHoverColor = color;
@@ -70,6 +92,12 @@ void RustyWindow::setSelectHoverColor(SDL_Color color)
 void RustyWindow::setCustomTexture(SDL_Texture* texture)
 {
 	this->_customTexture = texture;
+}
+
+void RustyWindow::setBarSize(int height)
+{
+	this->_barPosition->h = height;
+	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
 void RustyWindow::addText(std::string text, int x, int y, TTF_Font* font)
@@ -154,9 +182,59 @@ RustyButton* RustyWindow::getButton(int id)
 	return nullptr;
 }
 
+void RustyWindow::updateSelectedId(int mouseX, int mouseY)
+{
+	SDL_Rect temp;
+	bool set = false;
+
+	for (auto button : this->_buttons) {
+		button->setSelect(false);
+		temp.x = button->getPosition()->x + this->_position->x;
+		temp.y = button->getPosition()->y + this->_position->y;
+		temp.w = button->getPosition()->w;
+		temp.h = button->getPosition()->h;
+		if (checkMousePositionOnObject(mouseX, mouseY, &temp)) {
+			this->_selectedId = button->getId();
+			button->setSelect(true);
+			set = true;
+		}
+	}
+
+	if (!set) {
+		this->_selectedId = 0;
+	}
+}
+
+int RustyWindow::click()
+{
+	if (this->_selectedId > 0) {
+		return this->getButton(this->_selectedId)->makeFunction();
+	}
+	return 0;
+}
+
 int RustyWindow::getSelectedId()
 {
 	return this->_selectedId;
+}
+
+SDL_Rect* RustyWindow::getWindowPosition()
+{
+	return this->_position;
+}
+
+SDL_Rect* RustyWindow::getBarPosition()
+{
+	return this->_barPosition;
+}
+
+SDL_Rect* RustyWindow::getBarAndWindowPosition()
+{
+	this->_barAndWindowPosition->x = this->_barPosition->x;
+	this->_barAndWindowPosition->y = this->_barPosition->y;
+	this->_barAndWindowPosition->w = this->_barPosition->w;
+	this->_barAndWindowPosition->h = this->_barPosition->h + this->_position->h;
+	return this->_barAndWindowPosition;
 }
 
 void RustyWindow::moveCursor(int direction)
@@ -208,6 +286,9 @@ void RustyWindow::move(int vecx, int vecy)
 			this->_position->y = this->_screenSize->Height - this->_position->h - 1;
 		}
 	}
+
+	this->_barPosition->x = this->_position->x;
+	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
 void RustyWindow::draw()
@@ -225,6 +306,10 @@ void RustyWindow::draw()
 		SDL_RenderFillRect(this->_renderer, this->_position);
 		SDL_SetRenderDrawColor(this->_renderer, this->_borderColor.r, this->_borderColor.g, this->_borderColor.b, this->_borderColor.a);
 		SDL_RenderDrawRect(this->_renderer, this->_position);
+		SDL_SetRenderDrawColor(this->_renderer, this->_barColor.r, this->_barColor.g, this->_barColor.b, this->_barColor.a);
+		SDL_RenderFillRect(this->_renderer, this->_barPosition);
+		SDL_SetRenderDrawColor(this->_renderer, this->_borderColor.r, this->_borderColor.g, this->_borderColor.b, this->_borderColor.a);
+		SDL_RenderDrawRect(this->_renderer, this->_barPosition);
 	}
 
 	SDL_Rect tempRect;
@@ -256,6 +341,8 @@ int RustyWindow::enter()
 RustyWindow::~RustyWindow()
 {
 	delete this->_position;
+	delete this->_barPosition;
+	delete this->_barAndWindowPosition;
 	SDL_DestroyTexture(this->_customTexture);
 	
 	for (auto text : this->_texts) {

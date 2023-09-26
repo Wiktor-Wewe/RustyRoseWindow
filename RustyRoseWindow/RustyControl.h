@@ -8,6 +8,7 @@ class RustyControl
 public:
 	void addKeyFunction(SDL_Keycode key, std::function<void()> function);
 	void handle(SDL_Event event); // need more test
+	void resetMove();
 	MouseInfo getMouseInfo();
 	MouseMove getMouseMove();
 

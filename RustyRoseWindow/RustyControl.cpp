@@ -43,6 +43,12 @@ void RustyControl::handle(SDL_Event event)
     }
 }
 
+void RustyControl::resetMove()
+{
+    this->_mousePositionXmem = this->_mousePositionX;
+    this->_mousePositionYmem = this->_mousePositionY;
+}
+
 MouseInfo RustyControl::getMouseInfo()
 {
     MouseInfo info;

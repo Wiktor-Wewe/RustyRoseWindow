@@ -10,7 +10,9 @@ public:
 	unsigned int addWindow(RustyWindow* window); //return id of window
 	RustyWindow* getWindow(unsigned int id);
 	void removeWindow(unsigned int id);
+	void removeCurrentWindow();
 	RustyWindow* getCurrentWindow();
+	unsigned int getCurrentWindowId();
 	void updateCurrentWindow(int mousePositionX, int mousePositionY);
 	void draw();
 

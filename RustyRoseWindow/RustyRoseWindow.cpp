@@ -12,6 +12,7 @@ const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
 RustyDialogWindow* dialogWindow;
+RustyWindow* rustyWindow;
 
 void pressW() {
     dialogWindow->move(0, -1);
@@ -39,14 +40,9 @@ int pressedNo() {
     return 0;
 }
 
-// todo
-// poprawic move na pewno w miniWindow i chyba w dialogWindow
-// to ze zacina sie gdy wyjade za mocno na boki
-// gdy chce przesunac o 5 ale maksymalnie ekranu zostalo mi 4, to uciac 1 z 5 i przesunac
-// dodac glowne okno z window managerem (RustyRenderWindow)
-// zronic scene?
-// zooptymalizowac mini window i dialog window
-// dodac obsluge myszki
+int CloseWindow() {
+    return -1;
+}
 
 int main(int argc, char* args[]) {
     
@@ -121,6 +117,7 @@ int main(int argc, char* args[]) {
     dialogWindow->centerTexts();
     dialogWindow->getButton(1)->setFunction(pressedYes);
     dialogWindow->getButton(2)->setFunction(pressedNo);
+    dialogWindow->getButton(3)->setFunction(CloseWindow);
 
 
     int change = 0;
@@ -134,6 +131,7 @@ int main(int argc, char* args[]) {
     RustyWindowsManager manager;
     dialogWindow->setPosition(50, 60);
 
+
     RustyControl control;
     control.addKeyFunction(SDLK_w, pressW);
     control.addKeyFunction(SDLK_s, pressS);
@@ -142,8 +140,12 @@ int main(int argc, char* args[]) {
 
     SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
 
-    RustyWindow* rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
-    rustyWindow->addText("wiktor", 200, 50, fonts.Large);
+    rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
+    rustyWindow->addText("This is simple information :)", 200, 50, fonts.Large);
+    rustyWindow->addButton("OK", 0, 0, 80, 30, fonts.Medium);
+    rustyWindow->getButton(1)->setFunction(CloseWindow);
+    rustyWindow->centerButtons();
+    rustyWindow->centerTexts();
     manager.addWindow(rustyWindow);
     manager.addWindow(dialogWindow);
 
@@ -167,20 +169,30 @@ int main(int argc, char* args[]) {
         SDL_RenderPresent(renderer);
 
         scene.clear(RustyScene::Clear::Dialogs);
-        dialogWindow->setCursor(index);
         scene.addDialog("Mouse x: " + std::to_string(control.getMouseInfo().x));
         scene.addDialog("Mouse y: " + std::to_string(control.getMouseInfo().y));
         scene.addDialog("Click Left: " + std::string(control.getMouseInfo().clickL == true ? "True" : "False"));
         scene.addDialog("Click Right: " + std::string(control.getMouseInfo().clickR == true ? "True" : "False"));
         scene.addDialog("Move X: " + std::to_string(control.getMouseMove().vecx));
         scene.addDialog("Move Y: " + std::to_string(control.getMouseMove().vecy));
+        scene.addDialog("Current Window Id: " + std::to_string(manager.getCurrentWindowId()));
+
+        manager.getCurrentWindow()->updateSelectedId(control.getMouseInfo().x, control.getMouseInfo().y);
 
         if (control.getMouseInfo().clickL) {
-            auto move = control.getMouseMove();
-            dialogWindow->move(move.vecx, move.vecy);
+            manager.updateCurrentWindow(control.getMouseInfo().x, control.getMouseInfo().y);
+            if (checkMousePositionOnObject(control.getMouseInfo().x, control.getMouseInfo().y, manager.getCurrentWindow()->getBarPosition())) {
+                auto move = control.getMouseMove();
+                manager.getCurrentWindow()->move(move.vecx, move.vecy);
+            }
+
+            int response = manager.getCurrentWindow()->click();
+            if (response == -1) {
+                manager.removeCurrentWindow();
+            }
         }
-        
-        //SDL_Delay(1000);
+        control.resetMove();
+        SDL_Delay(2);
     }
 
     delete dialogWindow;

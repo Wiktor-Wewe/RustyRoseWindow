@@ -138,4 +138,12 @@ static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Fo
 	return finalTexture;
 }
 
+static bool checkMousePositionOnObject(int xMouse, int yMouse, SDL_Rect* objectPosition) 
+{
+	if ( xMouse >= objectPosition->x && xMouse <= objectPosition->x + objectPosition->w && 
+		 yMouse >= objectPosition->y && yMouse <= objectPosition->y + objectPosition->h )
+			return true;
+	return false;
+}
+
 #endif // SHARED_RESOURCE_UTIL_H
