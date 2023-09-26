@@ -18,9 +18,11 @@ public:
 	
 	void addText(std::string text, int x, int y, TTF_Font* font = NULL);
 	void removeText(std::string text);
+	void centerTexts();
 
 	unsigned int addButton(std::string text, int x, int y, int width, int height, TTF_Font* font = NULL); // windowMenager sould manage id
 	void removeButton(int id);
+	void centerButtons();
 	RustyButton* getButton(int id);
 	int getSelectedId();
 
@@ -29,6 +31,7 @@ public:
 
 	void move(int vecx, int vecy);
 	virtual void draw();
+	int enter();
 
 	~RustyWindow();
 

@@ -25,6 +25,7 @@ public:
 	void setCustomHoverTexture(SDL_Texture* texture);
 	
 	int getId();
+	SDL_Rect* getPosition();
 	void move(int vecx, int vecy);
 	void draw(SDL_Rect* windowPosition);
 

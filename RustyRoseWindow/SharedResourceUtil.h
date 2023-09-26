@@ -53,6 +53,18 @@ struct Image {
 	SDL_Rect* rect = NULL;
 };
 
+struct MouseInfo {
+	int x;
+	int y;
+	bool clickL;
+	bool clickR;
+};
+
+struct MouseMove {
+	int vecx;
+	int vecy;
+};
+
 static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Font* font, SDL_Color textColor, SDL_Color outlineColor, SDL_Renderer* renderer, int wrapLength)
 {
 	auto renderTarget = SDL_GetRenderTarget(renderer);

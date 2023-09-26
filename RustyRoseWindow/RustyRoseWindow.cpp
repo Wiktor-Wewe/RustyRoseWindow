@@ -29,6 +29,16 @@ void pressD() {
     dialogWindow->move(1, 0);
 }
 
+int pressedYes() {
+    printf("YES\n");
+    return 1;
+}
+
+int pressedNo() {
+    printf("NO\n");
+    return 0;
+}
+
 // todo
 // poprawic move na pewno w miniWindow i chyba w dialogWindow
 // to ze zacina sie gdy wyjade za mocno na boki
@@ -107,14 +117,21 @@ int main(int argc, char* args[]) {
 
     std::string text = "Are you sure you want to override save file?";
     dialogWindow = new RustyDialogWindow(text, renderer, &screenSize, fonts.Medium, fontSmall, 600, 400);
+    dialogWindow->addText("Po nadpisaniu pliku nie bedzie juz mozlwiosci odwrotu wiec lepiej to wszystko przemysl.", 0, 0, fonts.Small);
+    dialogWindow->centerTexts();
+    dialogWindow->getButton(1)->setFunction(pressedYes);
+    dialogWindow->getButton(2)->setFunction(pressedNo);
+
 
     int change = 0;
     int endMiniWindow = 0;
     bool hover = true;
     
-    RustyScene scene(renderer, fonts.Large, &screenSize);
-    RustyWindowsManager manager(renderer);
-    manager.addWindow(dialogWindow);
+    int sizeX = 600;
+    int sizeY = 400;
+
+    RustyScene scene(renderer, fonts.Medium, &screenSize);
+    RustyWindowsManager manager;
     dialogWindow->setPosition(50, 60);
 
     RustyControl control;
@@ -128,8 +145,10 @@ int main(int argc, char* args[]) {
     RustyWindow* rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
     rustyWindow->addText("wiktor", 200, 50, fonts.Large);
     manager.addWindow(rustyWindow);
+    manager.addWindow(dialogWindow);
 
-    int dialogNumber = 0;
+    int index = 1;
+
     bool quit = false;
     SDL_Event e;
     while (!quit) {
@@ -147,23 +166,21 @@ int main(int argc, char* args[]) {
         scene.draw();
         SDL_RenderPresent(renderer);
 
-        dialogWindow->setCursor(1);
-        change++;
-        if (change > 500) {
-            if (hover) {
-                hover = false;
-                dialogWindow->moveCursor(-1);
-            }
-            else {
-                hover = true;
-                dialogWindow->moveCursor(1);
-            }
-            change = 0;
-            scene.clear(RustyScene::Clear::Dialogs);
-            scene.addDialog("Selected index: " + std::to_string(dialogWindow->getSelectedId()));
+        scene.clear(RustyScene::Clear::Dialogs);
+        dialogWindow->setCursor(index);
+        scene.addDialog("Mouse x: " + std::to_string(control.getMouseInfo().x));
+        scene.addDialog("Mouse y: " + std::to_string(control.getMouseInfo().y));
+        scene.addDialog("Click Left: " + std::string(control.getMouseInfo().clickL == true ? "True" : "False"));
+        scene.addDialog("Click Right: " + std::string(control.getMouseInfo().clickR == true ? "True" : "False"));
+        scene.addDialog("Move X: " + std::to_string(control.getMouseMove().vecx));
+        scene.addDialog("Move Y: " + std::to_string(control.getMouseMove().vecy));
+
+        if (control.getMouseInfo().clickL) {
+            auto move = control.getMouseMove();
+            dialogWindow->move(move.vecx, move.vecy);
         }
         
-        SDL_Delay(1);
+        //SDL_Delay(1000);
     }
 
     delete dialogWindow;

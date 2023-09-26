@@ -35,8 +35,11 @@ void RustyWindow::setPosition(int x, int y)
 
 void RustyWindow::setSize(int width, int height)
 {
-	this->_position->w = width;
-	this->_position->h = height;
+	if(width > 0)
+		this->_position->w = width;
+
+	if(height > 0)
+		this->_position->h = height;
 }
 
 void RustyWindow::setBackgroundColor(SDL_Color color)
@@ -92,15 +95,28 @@ void RustyWindow::removeText(std::string text)
 	}
 }
 
+void RustyWindow::centerTexts()
+{
+	int partOfScreenY = (this->_position->h * 0.83) / (this->_texts.size() + 1);
+
+	for (int i = 0; i < this->_texts.size(); i++) {
+		this->_texts[i]->rect->x = (this->_position->w / 2) - (this->_texts[i]->rect->w / 2);
+		this->_texts[i]->rect->y = (partOfScreenY + (i * partOfScreenY)) - (this->_texts[i]->rect->h / 2);
+	}
+}
+
 unsigned int RustyWindow::addButton(std::string text, int x, int y, int width, int height, TTF_Font* font)
 {
+	// set font and id
 	TTF_Font* buttonFont = font == NULL ? this->_font : font;
 	unsigned int id = this->_buttonIdCounter;
 
+	// add button and text on it
 	RustyButton* button = new RustyButton(id, this->_renderer, this->_screenSize, font, x, y, width, height);
 	button->setText(text);
 	this->_buttons.push_back(button);
 
+	// move counter and return id of new button
 	this->_buttonIdCounter++;
 	return id;
 }
@@ -113,6 +129,17 @@ void RustyWindow::removeButton(int id)
 			this->_buttons.erase(this->_buttons.begin() + i);
 			return;
 		}
+	}
+}
+
+void RustyWindow::centerButtons()
+{
+	int partOfScreenX = this->_position->w / (this->_buttons.size() + 1);
+	int partOfScreenY = this->_position->h / 6;
+
+	for (int i = 0; i < this->_buttons.size(); i++) {
+		int tempX = (partOfScreenX + (partOfScreenX * i)) - ((this->_buttons[i]->getPosition()->w) / 2);
+		this->_buttons[i]->setPosition(tempX, partOfScreenY * 5);
 	}
 }
 
@@ -147,10 +174,15 @@ void RustyWindow::moveCursor(int direction)
 
 void RustyWindow::setCursor(unsigned int id)
 {
-	// check too
+	for (auto button : this->_buttons) {
+		button->setSelect(false);
+	}
+
 	if (id > 0 && id < this->_buttonIdCounter) {
 		this->_selectedId = id;
 	}
+
+	this->getButton(this->_selectedId)->setSelect(true);
 }
 
 void RustyWindow::move(int vecx, int vecy)
@@ -210,6 +242,15 @@ void RustyWindow::draw()
 
 	SDL_SetRenderTarget(this->_renderer, oldTarget);
 	SDL_SetRenderDrawColor(this->_renderer, oldColor.r, oldColor.b, oldColor.b, oldColor.a);
+}
+
+int RustyWindow::enter()
+{
+	auto button = this->getButton(this->getSelectedId());
+	if (button) {
+		return button->makeFunction();
+	}
+	return -1;
 }
 
 RustyWindow::~RustyWindow()

@@ -6,17 +6,20 @@
 class RustyWindowsManager
 {
 public:
-	RustyWindowsManager(SDL_Renderer* renderer);
-	void addWindow(RustyWindow* window);
+	RustyWindowsManager();
+	unsigned int addWindow(RustyWindow* window); //return id of window
+	RustyWindow* getWindow(unsigned int id);
+	void removeWindow(unsigned int id);
+	RustyWindow* getCurrentWindow();
+	void updateCurrentWindow(int mousePositionX, int mousePositionY);
 	void draw();
 
 	~RustyWindowsManager();
 
 private:
-	SDL_Renderer* _renderer;
-	int _currentWindowId;
+	unsigned int _idCounter;
+	unsigned int _currentWindowId;
 
-	std::vector<RustyWindow*> _windows;
-	//std::unordered_map<int, RustyDialogWindow*> _dialogWindows;
+	std::unordered_map<int, RustyWindow*> _windows;
 };
 

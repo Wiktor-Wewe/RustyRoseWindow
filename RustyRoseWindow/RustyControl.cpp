@@ -7,6 +7,18 @@ void RustyControl::addKeyFunction(SDL_Keycode key, std::function<void()> functio
 
 void RustyControl::handle(SDL_Event event)
 {
+    // save old position of mouse and get new
+    this->_mousePositionXmem = this->_mousePositionX;
+    this->_mousePositionYmem = this->_mousePositionY;
+    Uint32 state = SDL_GetMouseState(&this->_mousePositionX, &this->_mousePositionY);
+
+    // get info of pessed mouse button
+    if (state & SDL_BUTTON(SDL_BUTTON_LEFT)) this->_leftClick = true;
+    else this->_leftClick = false;
+
+    if (state & SDL_BUTTON(SDL_BUTTON_RIGHT)) this->_rightClick = true;
+    else this->_rightClick = false;
+
     // if some of the key that have function are pressed add it to this->_pressedKey
     if (event.type == SDL_KEYDOWN) {
         auto it = this->_keyFunctions.find(event.key.keysym.sym);
@@ -29,6 +41,26 @@ void RustyControl::handle(SDL_Event event)
     for (auto key : this->_pressedKey) {
         this->_keyFunctions[key]();
     }
+}
+
+MouseInfo RustyControl::getMouseInfo()
+{
+    MouseInfo info;
+    info.x = this->_mousePositionX;
+    info.y = this->_mousePositionY;
+    info.clickL = this->_leftClick;
+    info.clickR = this->_rightClick;
+
+    return info;
+}
+
+MouseMove RustyControl::getMouseMove()
+{
+    MouseMove move;
+    move.vecx = this->_mousePositionX - this->_mousePositionXmem;
+    move.vecy = this->_mousePositionY - this->_mousePositionYmem;
+
+    return move;
 }
 
 bool RustyControl::_isPressed(SDL_Keycode key)

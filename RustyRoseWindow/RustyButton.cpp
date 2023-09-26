@@ -103,7 +103,10 @@ void RustyButton::setFunction(std::function<int()> function)
 
 int RustyButton::makeFunction()
 {
-	return this->_function();
+	if (this->_function) {
+		return this->_function();
+	}
+	return -1;
 }
 
 void RustyButton::setCustomTexture(SDL_Texture* texture)
@@ -127,6 +130,11 @@ void RustyButton::setCustomHoverTexture(SDL_Texture* texture)
 int RustyButton::getId()
 {
 	return this->_id;
+}
+
+SDL_Rect* RustyButton::getPosition()
+{
+	return this->_position;
 }
 
 void RustyButton::move(int vecx, int vecy)
