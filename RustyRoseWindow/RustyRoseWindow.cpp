@@ -1,34 +1,9 @@
 ﻿#include <stdio.h>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include "RustyDialogWindow.h"
+#include "RustyRenderWindow.h"
 #include "RustyControl.h"
-#include "RustyScene.h"
-#include "RustyWindow.h"
-#include "RustyWindowsManager.h"
 
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
-
-RustyDialogWindow* dialogWindow;
-RustyWindow* rustyWindow;
-
-void pressW() {
-    dialogWindow->move(0, -1);
-}
-
-void pressS() {
-    dialogWindow->move(0, 1);
-}
-
-void pressA() {
-    dialogWindow->move(-1, 0);
-}
-
-void pressD() {
-    dialogWindow->move(1, 0);
-}
 
 int pressedYes() {
     printf("YES\n");
@@ -42,6 +17,26 @@ int pressedNo() {
 
 int CloseWindow() {
     return -1;
+}
+
+void handleWindows(RustyWindowsManager* manager, RustyControl* control)
+{
+    if (manager->isAnyWindow()) {
+        manager->getCurrentWindow()->updateSelectedId(control->getMouseInfo().x, control->getMouseInfo().y);
+
+        if (control->getMouseInfo().clickL) {
+            manager->updateCurrentWindow(control->getMouseInfo().x, control->getMouseInfo().y);
+            if (checkMousePositionOnObject(control->getMouseInfo().x, control->getMouseInfo().y, manager->getCurrentWindow()->getBarPosition())) {
+                auto move = control->getMouseMove();
+                manager->getCurrentWindow()->move(move.vecx, move.vecy);
+            }
+
+            int response = manager->getCurrentWindow()->click();
+            if (response == -1) {
+                manager->removeCurrentWindow();
+            }
+        }
+    }
 }
 
 int main(int argc, char* args[]) {
@@ -89,8 +84,9 @@ int main(int argc, char* args[]) {
     }
 
     const char* pathToImg = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\SAVE.PNG";
-    SDL_Surface* sampleSurface = IMG_Load(pathToImg);
-    SDL_Texture* sampleTexture = SDL_CreateTextureFromSurface(renderer, sampleSurface);
+    //SDL_Surface* sampleSurface = IMG_Load(pathToImg);
+    //SDL_Texture* sampleTexture = SDL_CreateTextureFromSurface(renderer, sampleSurface);
+    //SDL_FreeSurface(sampleSurface);
 
     const char fontPath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\arial.ttf";
     TTF_Font* fontSmall = TTF_OpenFont(fontPath, 12);
@@ -104,57 +100,40 @@ int main(int argc, char* args[]) {
         return -1;
     }
 
+    RustyControl control;
+    control.addKeyFunction(SDLK_w, NULL);
+    control.addKeyFunction(SDLK_s, NULL);
+    control.addKeyFunction(SDLK_a, NULL);
+    control.addKeyFunction(SDLK_d, NULL);
+
     Fonts fonts(fontSmall, fontMedium, fontLarge);
-
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-
     ScreenSize screenSize(1280, 720);
 
+    RustyRenderWindow renderWindow(renderer, fonts.Medium, &screenSize);
+    
     std::string text = "Are you sure you want to override save file?";
-    dialogWindow = new RustyDialogWindow(text, renderer, &screenSize, fonts.Medium, fontSmall, 600, 400);
+    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, &screenSize, fonts.Medium, fontSmall, 600, 400);
     dialogWindow->addText("Po nadpisaniu pliku nie bedzie juz mozlwiosci odwrotu wiec lepiej to wszystko przemysl.", 0, 0, fonts.Small);
     dialogWindow->centerTexts();
     dialogWindow->getButton(1)->setFunction(pressedYes);
     dialogWindow->getButton(2)->setFunction(pressedNo);
     dialogWindow->getButton(3)->setFunction(CloseWindow);
-
-
-    int change = 0;
-    int endMiniWindow = 0;
-    bool hover = true;
-    
-    int sizeX = 600;
-    int sizeY = 400;
-
-    RustyScene scene(renderer, fonts.Medium, &screenSize);
-    RustyWindowsManager manager;
     dialogWindow->setPosition(50, 60);
 
-
-    RustyControl control;
-    control.addKeyFunction(SDLK_w, pressW);
-    control.addKeyFunction(SDLK_s, pressS);
-    control.addKeyFunction(SDLK_a, pressA);
-    control.addKeyFunction(SDLK_d, pressD);
-
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xff);
-
-    rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
+    RustyWindow* rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
     rustyWindow->addText("This is simple information :)", 200, 50, fonts.Large);
     rustyWindow->addButton("OK", 0, 0, 80, 30, fonts.Medium);
     rustyWindow->getButton(1)->setFunction(CloseWindow);
     rustyWindow->centerButtons();
     rustyWindow->centerTexts();
-    manager.addWindow(rustyWindow);
-    manager.addWindow(dialogWindow);
 
-    int index = 1;
+    renderWindow.getManager()->addWindow(rustyWindow);
+    renderWindow.getManager()->addWindow(dialogWindow);
 
     bool quit = false;
     SDL_Event e;
     while (!quit) {
-        while (SDL_PollEvent(&e) != 0) {
+        while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = true;
             }
@@ -164,38 +143,25 @@ int main(int argc, char* args[]) {
         }
 
         SDL_RenderClear(renderer);
-        manager.draw();
-        scene.draw();
+        renderWindow.reversedDraw();
         SDL_RenderPresent(renderer);
 
-        scene.clear(RustyScene::Clear::Dialogs);
-        scene.addDialog("Mouse x: " + std::to_string(control.getMouseInfo().x));
-        scene.addDialog("Mouse y: " + std::to_string(control.getMouseInfo().y));
-        scene.addDialog("Click Left: " + std::string(control.getMouseInfo().clickL == true ? "True" : "False"));
-        scene.addDialog("Click Right: " + std::string(control.getMouseInfo().clickR == true ? "True" : "False"));
-        scene.addDialog("Move X: " + std::to_string(control.getMouseMove().vecx));
-        scene.addDialog("Move Y: " + std::to_string(control.getMouseMove().vecy));
-        scene.addDialog("Current Window Id: " + std::to_string(manager.getCurrentWindowId()));
+        MouseInfo mouseInfo = control.getMouseInfo();
+        MouseMove mouseMove = control.getMouseMove();
+        renderWindow.getScene()->clear(RustyScene::Clear::Dialogs);
+        renderWindow.getScene()->addDialog("Mouse x: " + std::to_string(mouseInfo.x));
+        renderWindow.getScene()->addDialog("Mouse y: " + std::to_string(mouseInfo.y));
+        renderWindow.getScene()->addDialog("Click Left: " + std::string(mouseInfo.clickL == true ? "True" : "False"));
+        renderWindow.getScene()->addDialog("Click Right: " + std::string(mouseInfo.clickR == true ? "True" : "False"));
+        renderWindow.getScene()->addDialog("Move X: " + std::to_string(mouseMove.vecx));
+        renderWindow.getScene()->addDialog("Move Y: " + std::to_string(mouseMove.vecy));
+        renderWindow.getScene()->addDialog("Current Window Id: " + std::to_string(renderWindow.getManager()->getCurrentWindowId()));
 
-        manager.getCurrentWindow()->updateSelectedId(control.getMouseInfo().x, control.getMouseInfo().y);
-
-        if (control.getMouseInfo().clickL) {
-            manager.updateCurrentWindow(control.getMouseInfo().x, control.getMouseInfo().y);
-            if (checkMousePositionOnObject(control.getMouseInfo().x, control.getMouseInfo().y, manager.getCurrentWindow()->getBarPosition())) {
-                auto move = control.getMouseMove();
-                manager.getCurrentWindow()->move(move.vecx, move.vecy);
-            }
-
-            int response = manager.getCurrentWindow()->click();
-            if (response == -1) {
-                manager.removeCurrentWindow();
-            }
-        }
+        handleWindows(renderWindow.getManager(), &control);
+        
         control.resetMove();
         SDL_Delay(2);
     }
-
-    delete dialogWindow;
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

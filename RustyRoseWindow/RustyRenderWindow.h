@@ -6,8 +6,12 @@
 class RustyRenderWindow
 {
 public:
-	RustyRenderWindow();
+	RustyRenderWindow(SDL_Renderer* renderer, TTF_Font* dialogFont, ScreenSize* screenSize);
+	RustyWindowsManager* getManager();
+	RustyScene* getScene();
 
+	void draw();
+	void reversedDraw();
 
 	~RustyRenderWindow();
 

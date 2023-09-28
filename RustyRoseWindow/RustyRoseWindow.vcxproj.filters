@@ -59,10 +59,10 @@
     <ClInclude Include="RustyScene.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="RustyWindowsManager.h">
+    <ClInclude Include="RustyWindow.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
-    <ClInclude Include="RustyWindow.h">
+    <ClInclude Include="RustyWindowsManager.h">
       <Filter>Pliki nagłówkowe</Filter>
     </ClInclude>
   </ItemGroup>

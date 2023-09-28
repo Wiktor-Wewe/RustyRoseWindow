@@ -39,7 +39,8 @@ void RustyControl::handle(SDL_Event event)
 
     // handle all of this->_pressedKey
     for (auto key : this->_pressedKey) {
-        this->_keyFunctions[key]();
+        auto function = this->_keyFunctions[key];
+        if (function) function(); // make function only if function is not null
     }
 }
 

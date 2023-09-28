@@ -93,6 +93,14 @@ void RustyWindowsManager::draw()
 	}
 }
 
+bool RustyWindowsManager::isAnyWindow()
+{
+	return !this->_windows.empty();
+}
+
 RustyWindowsManager::~RustyWindowsManager()
 {
+	for (auto window : this->_windows) {
+		delete window.second;
+	}
 }
