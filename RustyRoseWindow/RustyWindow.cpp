@@ -100,14 +100,17 @@ void RustyWindow::setBarSize(int height)
 	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
-void RustyWindow::addText(std::string text, int x, int y, TTF_Font* font)
+void RustyWindow::addText(std::string text, int x, int y, TTF_Font* font, int maxWidth)
 {
 	ImageText* imageText = new ImageText;
 	imageText->text = text;
 	imageText->rect->x = x;
 	imageText->rect->y = y;
+
 	auto windowFont = font == NULL ? this->_font : font;
-	imageText->texture = makeTextureFromText(text, imageText->rect, windowFont, this->_fontColor, this->_fontOutlineColor, this->_renderer, this->_position->w);
+	if (maxWidth == 0) maxWidth = this->_position->w - 10;
+
+	imageText->texture = makeTextureFromText(text, imageText->rect, windowFont, this->_fontColor, this->_fontOutlineColor, this->_renderer, maxWidth);
 
 	this->_texts.push_back(imageText);
 }

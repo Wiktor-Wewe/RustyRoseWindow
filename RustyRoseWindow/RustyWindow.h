@@ -18,7 +18,7 @@ public:
 	void setCustomTexture(SDL_Texture* texture);
 	void setBarSize(int height);
 	
-	void addText(std::string text, int x, int y, TTF_Font* font = NULL);
+	void addText(std::string text, int x, int y, TTF_Font* font = NULL, int maxWidth = 0);
 	void removeText(std::string text);
 	void centerTexts();
 

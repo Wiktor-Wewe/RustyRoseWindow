@@ -6,9 +6,20 @@
 class RustyRenderWindow
 {
 public:
-	RustyRenderWindow(SDL_Renderer* renderer, TTF_Font* dialogFont, ScreenSize* screenSize);
+	RustyRenderWindow(std::string windowName, int windowWidth, int windowHeight, const char* fontPath);
+	
+	void setFontSmall(const char* fontPath, int size);
+	void setFontMedium(const char* fontPath, int size);
+	void setFontLarge(const char* fontPath, int size);
+
 	RustyWindowsManager* getManager();
 	RustyScene* getScene();
+
+	int getInitStatus();
+	SDL_Window* getWindow();
+	SDL_Renderer* getRenderer();
+	ScreenSize* getScreenSize();
+	Fonts* getFonts();
 
 	void draw();
 	void reversedDraw();
@@ -16,8 +27,13 @@ public:
 	~RustyRenderWindow();
 
 private:
+	int _initStatus;
+	SDL_Window* _window;
+	SDL_Renderer* _renderer;
+	ScreenSize* _screenSize;
+	Fonts* _fonts;
+
 	RustyWindowsManager* _manager;
 	RustyScene* _scene;
-
 };
 

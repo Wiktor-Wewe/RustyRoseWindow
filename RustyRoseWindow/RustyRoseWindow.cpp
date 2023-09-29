@@ -1,4 +1,5 @@
 ﻿#include <stdio.h>
+#include <fstream>
 #include "RustyRenderWindow.h"
 #include "RustyControl.h"
 
@@ -22,13 +23,14 @@ int CloseWindow() {
 void handleWindows(RustyWindowsManager* manager, RustyControl* control)
 {
     if (manager->isAnyWindow()) {
-        manager->getCurrentWindow()->updateSelectedId(control->getMouseInfo().x, control->getMouseInfo().y);
+        auto mouseInfo = control->getMouseInfo();
+        manager->getCurrentWindow()->updateSelectedId(mouseInfo.x, mouseInfo.y);
 
-        if (control->getMouseInfo().clickL) {
-            manager->updateCurrentWindow(control->getMouseInfo().x, control->getMouseInfo().y);
-            if (checkMousePositionOnObject(control->getMouseInfo().x, control->getMouseInfo().y, manager->getCurrentWindow()->getBarPosition())) {
-                auto move = control->getMouseMove();
-                manager->getCurrentWindow()->move(move.vecx, move.vecy);
+        if (mouseInfo.clickL) {
+            manager->updateCurrentWindow(mouseInfo.x, mouseInfo.y);
+            if (checkMousePositionOnObject(mouseInfo.x, mouseInfo.y, manager->getCurrentWindow()->getBarPosition())) {
+                auto mouseMove = control->getMouseMove();
+                manager->getCurrentWindow()->move(mouseMove.vecx, mouseMove.vecy);
             }
 
             int response = manager->getCurrentWindow()->click();
@@ -40,65 +42,24 @@ void handleWindows(RustyWindowsManager* manager, RustyControl* control)
 }
 
 int main(int argc, char* args[]) {
+
+    std::fstream textFile;
+    const char textFilePath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\unicodeTest.txt";
     
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        printf("Can't initialize SDL! SDL_Error: %s\n", SDL_GetError());
-        return -1;
+    std::string utf8line = "cant read text test file :c";
+    textFile.open(textFilePath, std::ios::in);
+    if (textFile.good()) {
+        std::getline(textFile, utf8line);
+        textFile.close();
     }
-
-    if (!IMG_Init(IMG_INIT_PNG)) {
-        printf("Can't initialize SDL_image! SDL_image Error: %s\n", IMG_GetError());
-        SDL_Quit();
-        return -1;
-    }
-
-    if (TTF_Init() < 0) {
-        printf("Can't initialize SDL_ttf! SDL_ttf Error: %s\n", TTF_GetError());
-        SDL_Quit();
-        return -1;
-    }
-
-    SDL_Window* window = SDL_CreateWindow(
-        "RustyRoseWindowTest",
-        SDL_WINDOWPOS_UNDEFINED,
-        SDL_WINDOWPOS_UNDEFINED,
-        1280,
-        720,
-        SDL_WINDOW_SHOWN
-    );
-
-    if (window == nullptr) {
-        printf("Can't create window! SDL_Error: %s\n", SDL_GetError());
-        IMG_Quit();
-        SDL_Quit();
-        return -1;
-    }
-
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    if (renderer == nullptr) {
-        printf("Can't create renderer! SDL_Error: %s\n", SDL_GetError());
-        SDL_DestroyWindow(window);
-        IMG_Quit();
-        SDL_Quit();
-        return -1;
-    }
-
-    const char* pathToImg = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\SAVE.PNG";
-    //SDL_Surface* sampleSurface = IMG_Load(pathToImg);
-    //SDL_Texture* sampleTexture = SDL_CreateTextureFromSurface(renderer, sampleSurface);
-    //SDL_FreeSurface(sampleSurface);
-
+    
     const char fontPath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\arial.ttf";
-    TTF_Font* fontSmall = TTF_OpenFont(fontPath, 12);
-    TTF_Font* fontMedium = TTF_OpenFont(fontPath, 24);
-    TTF_Font* fontLarge = TTF_OpenFont(fontPath, 36);
 
-    if (fontSmall == nullptr || fontMedium == nullptr || fontLarge == nullptr) {
-        printf("Can't load font! SDL_ttf Error: %s\n", TTF_GetError());
-        TTF_Quit();
-        SDL_Quit();
-        return -1;
-    }
+    RustyRenderWindow renderWindow("RustyWindowTest", SCREEN_WIDTH, SCREEN_HEIGHT, fontPath);
+
+    SDL_Renderer* renderer = renderWindow.getRenderer();
+    Fonts* fonts = renderWindow.getFonts();
+    ScreenSize* screenSize = renderWindow.getScreenSize();
 
     RustyControl control;
     control.addKeyFunction(SDLK_w, NULL);
@@ -106,23 +67,19 @@ int main(int argc, char* args[]) {
     control.addKeyFunction(SDLK_a, NULL);
     control.addKeyFunction(SDLK_d, NULL);
 
-    Fonts fonts(fontSmall, fontMedium, fontLarge);
-    ScreenSize screenSize(1280, 720);
-
-    RustyRenderWindow renderWindow(renderer, fonts.Medium, &screenSize);
-    
     std::string text = "Are you sure you want to override save file?";
-    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, &screenSize, fonts.Medium, fontSmall, 600, 400);
-    dialogWindow->addText("Po nadpisaniu pliku nie bedzie juz mozlwiosci odwrotu wiec lepiej to wszystko przemysl.", 0, 0, fonts.Small);
+    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, screenSize, fonts->Medium, fonts->Small, 600, 400);
+    dialogWindow->addText("After overwriting the file, there will be no possibility to reverse this process, so it's better to carefully consider everything.", 0, 0, fonts->Small, 350);
+    dialogWindow->addText(utf8line, 0, 0, fonts->Small, 350);
     dialogWindow->centerTexts();
     dialogWindow->getButton(1)->setFunction(pressedYes);
     dialogWindow->getButton(2)->setFunction(pressedNo);
     dialogWindow->getButton(3)->setFunction(CloseWindow);
     dialogWindow->setPosition(50, 60);
 
-    RustyWindow* rustyWindow = new RustyWindow(renderer, &screenSize, fonts.Medium, 600, 400);
-    rustyWindow->addText("This is simple information :)", 200, 50, fonts.Large);
-    rustyWindow->addButton("OK", 0, 0, 80, 30, fonts.Medium);
+    RustyWindow* rustyWindow = new RustyWindow(renderer, screenSize, fonts->Medium, 600, 400);
+    rustyWindow->addText("This is simple information :)", 200, 50, fonts->Large);
+    rustyWindow->addButton("OK", 0, 0, 80, 30, fonts->Medium);
     rustyWindow->getButton(1)->setFunction(CloseWindow);
     rustyWindow->centerButtons();
     rustyWindow->centerTexts();
@@ -142,9 +99,7 @@ int main(int argc, char* args[]) {
             }
         }
 
-        SDL_RenderClear(renderer);
         renderWindow.reversedDraw();
-        SDL_RenderPresent(renderer);
 
         MouseInfo mouseInfo = control.getMouseInfo();
         MouseMove mouseMove = control.getMouseMove();
@@ -162,11 +117,6 @@ int main(int argc, char* args[]) {
         control.resetMove();
         SDL_Delay(2);
     }
-
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    IMG_Quit();
-    SDL_Quit();
 
     return 0;
 }
