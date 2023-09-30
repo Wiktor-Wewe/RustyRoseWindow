@@ -71,57 +71,11 @@ struct MouseMove {
 	int vecy;
 };
 
-static Uint16* utf8ToUint16(const std::string& text) {
-	std::vector<Uint16> text16;
-
-	for (size_t i = 0; i < text.size(); ) {
-		unsigned char ch = text[i];
-
-		if (ch < 0x80) {
-			text16.push_back(ch);
-			++i;
-		}
-		else if (ch < 0xE0) {
-			if (i + 1 < text.size()) {
-				Uint16 unicodeValue = ((ch & 0x1F) << 6) | (text[i + 1] & 0x3F);
-				text16.push_back(unicodeValue);
-			}
-			i += 2;
-		}
-		else if (ch < 0xF0) {
-			if (i + 2 < text.size()) {
-				Uint16 unicodeValue = ((ch & 0x0F) << 12) | ((text[i + 1] & 0x3F) << 6) | (text[i + 2] & 0x3F);
-				text16.push_back(unicodeValue);
-			}
-			i += 3;
-		}
-		else if (ch < 0xF8) {
-			if (i + 3 < text.size()) {
-				Uint16 unicodeValue = ((ch & 0x07) << 18) | ((text[i + 1] & 0x3F) << 12) | ((text[i + 2] & 0x3F) << 6) | (text[i + 3] & 0x3F);
-				text16.push_back(unicodeValue);
-			}
-			i += 4;
-		}
-		else {
-			++i;
-		}
-	}
-
-	Uint16* result = new Uint16[text16.size() + 1];
-	for (size_t i = 0; i < text16.size(); ++i) {
-		result[i] = text16[i];
-	}
-	result[text16.size()] = 0;
-
-	return result;
-}
-
 static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Font* font, SDL_Color textColor, SDL_Color outlineColor, SDL_Renderer* renderer, int wrapLength)
 {
 	auto renderTarget = SDL_GetRenderTarget(renderer);
-	Uint16* text16 = utf8ToUint16(text);
 
-	SDL_Surface* outlineSurface = TTF_RenderUNICODE_Blended_Wrapped(font, text16, outlineColor, wrapLength);
+	SDL_Surface* outlineSurface = TTF_RenderUTF8_Blended_Wrapped(font, text.c_str(), outlineColor, wrapLength);
 	if (outlineSurface == NULL) {
 		printf("unable to make outline surface in text: %s\n", text.c_str());
 		return nullptr;
@@ -161,7 +115,7 @@ static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Fo
 	SDL_RenderCopy(renderer, outlineTexture, NULL, &rect);
 	rect.y = 0;
 
-	SDL_Surface* textSurface = TTF_RenderUNICODE_Blended_Wrapped(font, text16, textColor, wrapLength);
+	SDL_Surface* textSurface = TTF_RenderUTF8_Blended_Wrapped(font, text.c_str(), textColor, wrapLength);
 	if (textSurface == NULL) {
 		printf("unable to make text surface in text: %s\n", text.c_str());
 		SDL_FreeSurface(outlineSurface);
@@ -182,7 +136,6 @@ static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Fo
 
 	SDL_RenderCopy(renderer, textTexture, NULL, &rect);
 
-	delete[] text16;
 	SDL_FreeSurface(outlineSurface);
 	SDL_FreeSurface(textSurface);
 	SDL_DestroyTexture(outlineTexture);

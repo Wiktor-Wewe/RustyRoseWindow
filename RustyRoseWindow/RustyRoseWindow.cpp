@@ -6,6 +6,10 @@
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 
+RustyRenderWindow* renderWindow;
+std::string utf8line;
+int i = 0;
+
 int pressedYes() {
     printf("YES\n");
     return 1;
@@ -18,6 +22,21 @@ int pressedNo() {
 
 int CloseWindow() {
     return -1;
+}
+
+void makeNewWindow() {
+    i++;
+    std::string text = "Are you sure you want to override save file?";
+    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderWindow->getRenderer(), renderWindow->getScreenSize(), renderWindow->getFonts()->Medium, renderWindow->getFonts()->Small, 600, 400);
+    dialogWindow->addText("After overwriting the file, there will be no possibility to reverse this process, so it's better to carefully consider everything.", 0, 0, renderWindow->getFonts()->Small, 350);
+    dialogWindow->addText(utf8line, 0, 0, renderWindow->getFonts()->Small, 350);
+    dialogWindow->centerTexts();
+    dialogWindow->getButton(1)->setFunction(pressedYes);
+    dialogWindow->getButton(2)->setFunction(pressedNo);
+    dialogWindow->getButton(3)->setFunction(CloseWindow);
+    dialogWindow->setPosition(50+i, 60+i);
+
+    renderWindow->getManager()->addWindow(dialogWindow);
 }
 
 void handleWindows(RustyWindowsManager* manager, RustyControl* control)
@@ -46,7 +65,7 @@ int main(int argc, char* args[]) {
     std::fstream textFile;
     const char textFilePath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\unicodeTest.txt";
     
-    std::string utf8line = "cant read text test file :c";
+    utf8line = "cant read text test file :c";
     textFile.open(textFilePath, std::ios::in);
     if (textFile.good()) {
         std::getline(textFile, utf8line);
@@ -55,17 +74,14 @@ int main(int argc, char* args[]) {
     
     const char fontPath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\arial.ttf";
 
-    RustyRenderWindow renderWindow("RustyWindowTest", SCREEN_WIDTH, SCREEN_HEIGHT, fontPath);
+    renderWindow = new RustyRenderWindow("RustyWindowTest", SCREEN_WIDTH, SCREEN_HEIGHT, fontPath);
 
-    SDL_Renderer* renderer = renderWindow.getRenderer();
-    Fonts* fonts = renderWindow.getFonts();
-    ScreenSize* screenSize = renderWindow.getScreenSize();
+    SDL_Renderer* renderer = renderWindow->getRenderer();
+    Fonts* fonts = renderWindow->getFonts();
+    ScreenSize* screenSize = renderWindow->getScreenSize();
 
     RustyControl control;
-    control.addKeyFunction(SDLK_w, NULL);
-    control.addKeyFunction(SDLK_s, NULL);
-    control.addKeyFunction(SDLK_a, NULL);
-    control.addKeyFunction(SDLK_d, NULL);
+    control.addKeyFunction(SDLK_SPACE, makeNewWindow);
 
     std::string text = "Are you sure you want to override save file?";
     RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, screenSize, fonts->Medium, fonts->Small, 600, 400);
@@ -84,8 +100,8 @@ int main(int argc, char* args[]) {
     rustyWindow->centerButtons();
     rustyWindow->centerTexts();
 
-    renderWindow.getManager()->addWindow(rustyWindow);
-    renderWindow.getManager()->addWindow(dialogWindow);
+    renderWindow->getManager()->addWindow(rustyWindow);
+    renderWindow->getManager()->addWindow(dialogWindow);
 
     bool quit = false;
     SDL_Event e;
@@ -99,24 +115,25 @@ int main(int argc, char* args[]) {
             }
         }
 
-        renderWindow.reversedDraw();
+        renderWindow->reversedDraw();
 
         MouseInfo mouseInfo = control.getMouseInfo();
         MouseMove mouseMove = control.getMouseMove();
-        renderWindow.getScene()->clear(RustyScene::Clear::Dialogs);
-        renderWindow.getScene()->addDialog("Mouse x: " + std::to_string(mouseInfo.x));
-        renderWindow.getScene()->addDialog("Mouse y: " + std::to_string(mouseInfo.y));
-        renderWindow.getScene()->addDialog("Click Left: " + std::string(mouseInfo.clickL == true ? "True" : "False"));
-        renderWindow.getScene()->addDialog("Click Right: " + std::string(mouseInfo.clickR == true ? "True" : "False"));
-        renderWindow.getScene()->addDialog("Move X: " + std::to_string(mouseMove.vecx));
-        renderWindow.getScene()->addDialog("Move Y: " + std::to_string(mouseMove.vecy));
-        renderWindow.getScene()->addDialog("Current Window Id: " + std::to_string(renderWindow.getManager()->getCurrentWindowId()));
+        renderWindow->getScene()->clear(RustyScene::Clear::Dialogs);
+        renderWindow->getScene()->addDialog("Mouse x: " + std::to_string(mouseInfo.x));
+        renderWindow->getScene()->addDialog("Mouse y: " + std::to_string(mouseInfo.y));
+        renderWindow->getScene()->addDialog("Click Left: " + std::string(mouseInfo.clickL == true ? "True" : "False"));
+        renderWindow->getScene()->addDialog("Click Right: " + std::string(mouseInfo.clickR == true ? "True" : "False"));
+        renderWindow->getScene()->addDialog("Move X: " + std::to_string(mouseMove.vecx));
+        renderWindow->getScene()->addDialog("Move Y: " + std::to_string(mouseMove.vecy));
+        renderWindow->getScene()->addDialog("Current Window Id: " + std::to_string(renderWindow->getManager()->getCurrentWindowId()));
 
-        handleWindows(renderWindow.getManager(), &control);
+        handleWindows(renderWindow->getManager(), &control);
         
         control.resetMove();
         SDL_Delay(2);
     }
 
+    delete renderWindow;
     return 0;
 }
