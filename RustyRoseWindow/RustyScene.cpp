@@ -1,6 +1,6 @@
 #include "RustyScene.h"
 
-RustyScene::RustyScene(SDL_Renderer* renderer, TTF_Font* font, ScreenSize* screenSize)
+RustyScene::RustyScene(SDL_Renderer* renderer, RRW_Font* font, RRW_ScreenSize* screenSize)
 {
 	this->_renderer = renderer;
 	this->_font = font;
@@ -11,7 +11,7 @@ RustyScene::RustyScene(SDL_Renderer* renderer, TTF_Font* font, ScreenSize* scree
 	this->_maxLineSize = this->_screenSize->Width * 0.9; // check if works fine
 }
 
-void RustyScene::setFont(TTF_Font* font)
+void RustyScene::setFont(RRW_Font* font)
 {
 	this->_font = font;
 }
@@ -34,9 +34,9 @@ void RustyScene::setMaxLineSize(int max)
 
 void RustyScene::addDialog(std::string dialog)
 {
-	ImageText* imageText = new ImageText;
+	RRW_ImageText* imageText = new RRW_ImageText;
 	imageText->text = dialog;
-	imageText->texture = makeTextureFromText(dialog, imageText->rect, this->_font, this->_dialogColor, this->_dialogHoverColor, this->_renderer, this->_maxLineSize);
+	imageText->texture = RRW_MakeTextureFromText(dialog, imageText->rect, this->_font, this->_dialogColor, this->_dialogHoverColor, this->_renderer, this->_maxLineSize);
 	imageText->rect->x = (this->_screenSize->Width / 2) - (imageText->rect->w / 2);
 
 	imageText->rect->y = this->_screenSize->Height - imageText->rect->h - 10;
@@ -62,17 +62,17 @@ void RustyScene::removeDialog(std::string dialog)
 	}
 }
 
-void RustyScene::addText(std::string text, int x, int y, SDL_Color color, SDL_Color hoverColor, TTF_Font* font, int maxLineSize)
+void RustyScene::addText(std::string text, int x, int y, SDL_Color color, SDL_Color hoverColor, RRW_Font* font, int maxLineSize)
 {
-	ImageText* imageText = new ImageText;
+	RRW_ImageText* imageText = new RRW_ImageText;
 	imageText->text = text;
 	imageText->rect->x = x;
 	imageText->rect->y = y;
 
-	TTF_Font* selectedFont = font != nullptr ? font : this->_font;
+	RRW_Font* selectedFont = font != nullptr ? font : this->_font;
 	int selectedMaxLineSize = maxLineSize != 0 ? maxLineSize : this->_maxLineSize;
 
-	imageText->texture = makeTextureFromText(text, imageText->rect, font, color, hoverColor, this->_renderer, selectedMaxLineSize);
+	imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, font, color, hoverColor, this->_renderer, selectedMaxLineSize, TTF_WRAPPED_ALIGN_LEFT);
 
 	this->_floatingText.push_back(imageText);
 }
@@ -93,7 +93,7 @@ void RustyScene::addImage(std::string path, SDL_Texture* texture, SDL_Rect* rect
 	if (layer < 0) layer = 0;
 	if (layer > 2) layer = 2;
 
-	Image* image = new Image;
+	RRW_Image* image = new RRW_Image;
 	image->path = path;
 	image->texture = texture;
 	image->rect = rect;

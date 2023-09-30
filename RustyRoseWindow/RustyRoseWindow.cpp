@@ -27,9 +27,9 @@ int CloseWindow() {
 void makeNewWindow() {
     i++;
     std::string text = "Are you sure you want to override save file?";
-    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderWindow->getRenderer(), renderWindow->getScreenSize(), renderWindow->getFonts()->Medium, renderWindow->getFonts()->Small, 600, 400);
-    dialogWindow->addText("After overwriting the file, there will be no possibility to reverse this process, so it's better to carefully consider everything.", 0, 0, renderWindow->getFonts()->Small, 350);
-    dialogWindow->addText(utf8line, 0, 0, renderWindow->getFonts()->Small, 350);
+    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderWindow->getRenderer(), renderWindow->getScreenSize(), renderWindow->getFonts()->medium, renderWindow->getFonts()->small, 600, 400);
+    dialogWindow->addText("After overwriting the file, there will be no possibility to reverse this process, so it's better to carefully consider everything.", 0, 0, renderWindow->getFonts()->small, 350);
+    dialogWindow->addText(utf8line, 0, 0, renderWindow->getFonts()->small, 350);
     dialogWindow->centerTexts();
     dialogWindow->getButton(1)->setFunction(pressedYes);
     dialogWindow->getButton(2)->setFunction(pressedNo);
@@ -47,7 +47,7 @@ void handleWindows(RustyWindowsManager* manager, RustyControl* control)
 
         if (mouseInfo.clickL) {
             manager->updateCurrentWindow(mouseInfo.x, mouseInfo.y);
-            if (checkMousePositionOnObject(mouseInfo.x, mouseInfo.y, manager->getCurrentWindow()->getBarPosition())) {
+            if (RRW_CheckMousePositionOnObject(mouseInfo.x, mouseInfo.y, manager->getCurrentWindow()->getBarPosition())) {
                 auto mouseMove = control->getMouseMove();
                 manager->getCurrentWindow()->move(mouseMove.vecx, mouseMove.vecy);
             }
@@ -63,7 +63,7 @@ void handleWindows(RustyWindowsManager* manager, RustyControl* control)
 int main(int argc, char* args[]) {
 
     std::fstream textFile;
-    const char textFilePath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\unicodeTest.txt";
+    const char textFilePath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\utf8Test.txt";
     
     utf8line = "cant read text test file :c";
     textFile.open(textFilePath, std::ios::in);
@@ -75,33 +75,38 @@ int main(int argc, char* args[]) {
     const char fontPath[] = "C:\\Users\\Wiktor\\source\\repos\\RustyRoseWindow\\x64\\Debug\\arial.ttf";
 
     renderWindow = new RustyRenderWindow("RustyWindowTest", SCREEN_WIDTH, SCREEN_HEIGHT, fontPath);
+    printf("status: %i\n", renderWindow->getInitStatus());
 
     SDL_Renderer* renderer = renderWindow->getRenderer();
-    Fonts* fonts = renderWindow->getFonts();
-    ScreenSize* screenSize = renderWindow->getScreenSize();
+    RRW_Fonts* fonts = renderWindow->getFonts();
+    RRW_ScreenSize* screenSize = renderWindow->getScreenSize();
 
     RustyControl control;
     control.addKeyFunction(SDLK_SPACE, makeNewWindow);
 
     std::string text = "Are you sure you want to override save file?";
-    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, screenSize, fonts->Medium, fonts->Small, 600, 400);
-    dialogWindow->addText("After overwriting the file, there will be no possibility to reverse this process, so it's better to carefully consider everything.", 0, 0, fonts->Small, 350);
-    dialogWindow->addText(utf8line, 0, 0, fonts->Small, 350);
+    RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, screenSize, fonts->medium, fonts->small, 600, 400);
+    dialogWindow->setBackgroundColor({ 0, 0, 0, 200 });
+    dialogWindow->addText("After overwriting the file, there will be no possibility to reverse this process, so it's better to carefully consider everything.", 0, 0, fonts->small, 350);
+    dialogWindow->addText(utf8line, 0, 0, fonts->small, 350);
     dialogWindow->centerTexts();
     dialogWindow->getButton(1)->setFunction(pressedYes);
     dialogWindow->getButton(2)->setFunction(pressedNo);
     dialogWindow->getButton(3)->setFunction(CloseWindow);
     dialogWindow->setPosition(50, 60);
 
-    RustyWindow* rustyWindow = new RustyWindow(renderer, screenSize, fonts->Medium, 600, 400);
-    rustyWindow->addText("This is simple information :)", 200, 50, fonts->Large);
-    rustyWindow->addButton("OK", 0, 0, 80, 30, fonts->Medium);
+    RustyWindow* rustyWindow = new RustyWindow(renderer, screenSize, fonts->medium, 600, 400);
+    rustyWindow->addText("This is simple information :)", 200, 50, fonts->large);
+    rustyWindow->addButton("OK", 0, 0, 80, 30, fonts->medium);
     rustyWindow->getButton(1)->setFunction(CloseWindow);
     rustyWindow->centerButtons();
     rustyWindow->centerTexts();
 
     renderWindow->getManager()->addWindow(rustyWindow);
     renderWindow->getManager()->addWindow(dialogWindow);
+
+    std::string statusText = "RustyRenderWindow init status: " + std::to_string(renderWindow->getInitStatus());
+    renderWindow->getScene()->addText(statusText, 0, 0, { 0xff, 0xff, 0xff, 0xff }, { 0xff, 0x00, 0x00, 0xff }, fonts->medium);
 
     bool quit = false;
     SDL_Event e;
@@ -117,8 +122,8 @@ int main(int argc, char* args[]) {
 
         renderWindow->reversedDraw();
 
-        MouseInfo mouseInfo = control.getMouseInfo();
-        MouseMove mouseMove = control.getMouseMove();
+        RRW_MouseInfo mouseInfo = control.getMouseInfo();
+        RRW_MouseMove mouseMove = control.getMouseMove();
         renderWindow->getScene()->clear(RustyScene::Clear::Dialogs);
         renderWindow->getScene()->addDialog("Mouse x: " + std::to_string(mouseInfo.x));
         renderWindow->getScene()->addDialog("Mouse y: " + std::to_string(mouseInfo.y));

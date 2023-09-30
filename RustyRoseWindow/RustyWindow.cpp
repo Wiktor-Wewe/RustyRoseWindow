@@ -1,6 +1,6 @@
 #include "RustyWindow.h"
 
-RustyWindow::RustyWindow(SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Font* font, int width, int height)
+RustyWindow::RustyWindow(SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font, int width, int height)
 {
 	this->_buttonIdCounter = 1;
 	this->_renderer = renderer;
@@ -33,7 +33,7 @@ RustyWindow::RustyWindow(SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Fon
 	this->_selectHoverColor = { 0xff, 0x00, 0x00, 0xff };
 }
 
-void RustyWindow::setFont(TTF_Font* font)
+void RustyWindow::setFont(RRW_Font* font)
 {
 	this->_font = font;
 }
@@ -100,9 +100,9 @@ void RustyWindow::setBarSize(int height)
 	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
-void RustyWindow::addText(std::string text, int x, int y, TTF_Font* font, int maxWidth)
+void RustyWindow::addText(std::string text, int x, int y, RRW_Font* font, int maxWidth)
 {
-	ImageText* imageText = new ImageText;
+	RRW_ImageText* imageText = new RRW_ImageText;
 	imageText->text = text;
 	imageText->rect->x = x;
 	imageText->rect->y = y;
@@ -110,7 +110,7 @@ void RustyWindow::addText(std::string text, int x, int y, TTF_Font* font, int ma
 	auto windowFont = font == NULL ? this->_font : font;
 	if (maxWidth == 0) maxWidth = this->_position->w - 10;
 
-	imageText->texture = makeTextureFromText(text, imageText->rect, windowFont, this->_fontColor, this->_fontOutlineColor, this->_renderer, maxWidth);
+	imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, windowFont, this->_fontColor, this->_fontOutlineColor, this->_renderer, maxWidth);
 
 	this->_texts.push_back(imageText);
 }
@@ -136,10 +136,10 @@ void RustyWindow::centerTexts()
 	}
 }
 
-unsigned int RustyWindow::addButton(std::string text, int x, int y, int width, int height, TTF_Font* font)
+unsigned int RustyWindow::addButton(std::string text, int x, int y, int width, int height, RRW_Font* font)
 {
 	// set font and id
-	TTF_Font* buttonFont = font == NULL ? this->_font : font;
+	RRW_Font* buttonFont = font == NULL ? this->_font : font;
 	unsigned int id = this->_buttonIdCounter;
 
 	// add button and text on it
@@ -196,7 +196,7 @@ void RustyWindow::updateSelectedId(int mouseX, int mouseY)
 		temp.y = button->getPosition()->y + this->_position->y;
 		temp.w = button->getPosition()->w;
 		temp.h = button->getPosition()->h;
-		if (checkMousePositionOnObject(mouseX, mouseY, &temp)) {
+		if (RRW_CheckMousePositionOnObject(mouseX, mouseY, &temp)) {
 			this->_selectedId = button->getId();
 			button->setSelect(true);
 			set = true;

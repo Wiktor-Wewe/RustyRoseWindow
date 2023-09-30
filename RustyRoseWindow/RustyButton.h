@@ -5,11 +5,11 @@
 class RustyButton
 {
 public:
-	RustyButton(int id, SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Font* font, int x, int y, int width, int height);
+	RustyButton(int id, SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font, int x, int y, int width, int height);
 	void setPosition(int x, int y);
 	void setSize(int width, int height);
 	void setText(std::string text);
-	void setFont(TTF_Font* font);
+	void setFont(RRW_Font* font);
 	void setFontColor(SDL_Color color);
 	void setFontOutlineColor(SDL_Color color);
 	void setTextPosition(int x, int y);
@@ -35,10 +35,10 @@ private:
 	int _id;
 
 	SDL_Renderer* _renderer;
-	ScreenSize* _screenSize;
-	TTF_Font* _font;
+	RRW_ScreenSize* _screenSize;
+	RRW_Font* _font;
 	SDL_Rect* _position;
-	ImageText* _text;
+	RRW_ImageText* _text;
 	bool _selected;
 
 	std::function<int()> _function;

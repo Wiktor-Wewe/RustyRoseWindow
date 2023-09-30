@@ -1,6 +1,6 @@
 #include "RustyDialogWindow.h"
 
-RustyDialogWindow::RustyDialogWindow(std::string text, SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Font* font, TTF_Font* buttonFont, int width, int height) :
+RustyDialogWindow::RustyDialogWindow(std::string text, SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font, RRW_Font* buttonFont, int width, int height) :
 	RustyWindow(renderer, screenSize, font, width, height) 
 {
 	this->buttonFont = buttonFont;
@@ -13,7 +13,7 @@ RustyDialogWindow::RustyDialogWindow(std::string text, SDL_Renderer* renderer, S
 	this->centerTexts();
 }
 
-void RustyDialogWindow::setButtonFont(TTF_Font* font)
+void RustyDialogWindow::setButtonFont(RRW_Font* font)
 {
 	this->buttonFont = font;
 }

@@ -19,20 +19,16 @@ RustyRenderWindow::RustyRenderWindow(std::string windowName, int windowWidth, in
         this->_initStatus = -3;
     }
 
-    TTF_Font* fontSmall = TTF_OpenFont(fontPath, 12);
-    TTF_Font* fontMedium = TTF_OpenFont(fontPath, 24);
-    TTF_Font* fontLarge = TTF_OpenFont(fontPath, 36);
-
-    if (fontSmall == nullptr || fontMedium == nullptr || fontLarge == nullptr) {
+    this->_fonts = RRW_OpenFonts(fontPath, 12, 24, 36, 1);
+    
+    if (this->_fonts == nullptr) {
         printf("Can't load font! SDL_ttf Error: %s\n", TTF_GetError());
         TTF_Quit();
         SDL_Quit();
         this->_initStatus = -4;
     }
 
-    this->_fonts = new Fonts(fontSmall, fontMedium, fontLarge);
-
-    this->_screenSize = new ScreenSize(windowWidth, windowHeight);
+    this->_screenSize = new RRW_ScreenSize(windowWidth, windowHeight);
 
     this->_window = SDL_CreateWindow(
         windowName.c_str(),
@@ -61,31 +57,33 @@ RustyRenderWindow::RustyRenderWindow(std::string windowName, int windowWidth, in
 
     this->_initStatus = 0;
     this->_manager = new RustyWindowsManager();
-	this->_scene = new RustyScene(this->_renderer, this->_fonts->Medium, this->_screenSize);
+	this->_scene = new RustyScene(this->_renderer, this->_fonts->medium, this->_screenSize);
+
+    SDL_SetRenderDrawBlendMode(this->_renderer, SDL_BLENDMODE_BLEND);
 }
 
-void RustyRenderWindow::setFontSmall(const char* fontPath, int size)
+void RustyRenderWindow::setFontSmall(const char* fontPath, int size, int outlineSize)
 {
-    if (this->_fonts->Small) {
-        TTF_CloseFont(this->_fonts->Small);
+    if (this->_fonts->small) {
+        delete this->_fonts->small;
     }
-    this->_fonts->Small = TTF_OpenFont(fontPath, size);
+    this->_fonts->small = new RRW_Font(fontPath, size, outlineSize);
 }
 
-void RustyRenderWindow::setFontMedium(const char* fontPath, int size)
+void RustyRenderWindow::setFontMedium(const char* fontPath, int size, int outlineSize)
 {
-    if (this->_fonts->Medium) {
-        TTF_CloseFont(this->_fonts->Medium);
+    if (this->_fonts->medium) {
+        delete this->_fonts->medium;
     }
-    this->_fonts->Medium = TTF_OpenFont(fontPath, size);
+    this->_fonts->medium = new RRW_Font(fontPath, size, outlineSize);
 }
 
-void RustyRenderWindow::setFontLarge(const char* fontPath, int size)
+void RustyRenderWindow::setFontLarge(const char* fontPath, int size, int outlineSize)
 {
-    if (this->_fonts->Large) {
-        TTF_CloseFont(this->_fonts->Large);
+    if (this->_fonts->large) {
+        delete this->_fonts->large;
     }
-    this->_fonts->Large = TTF_OpenFont(fontPath, size);
+    this->_fonts->large = new RRW_Font(fontPath, size, outlineSize);
 }
 
 RustyWindowsManager* RustyRenderWindow::getManager()
@@ -113,12 +111,12 @@ SDL_Renderer* RustyRenderWindow::getRenderer()
     return this->_renderer;
 }
 
-ScreenSize* RustyRenderWindow::getScreenSize()
+RRW_ScreenSize* RustyRenderWindow::getScreenSize()
 {
     return this->_screenSize;
 }
 
-Fonts* RustyRenderWindow::getFonts()
+RRW_Fonts* RustyRenderWindow::getFonts()
 {
     return this->_fonts;
 }

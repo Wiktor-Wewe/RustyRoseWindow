@@ -50,9 +50,9 @@ void RustyControl::resetMove()
     this->_mousePositionYmem = this->_mousePositionY;
 }
 
-MouseInfo RustyControl::getMouseInfo()
+RRW_MouseInfo RustyControl::getMouseInfo()
 {
-    MouseInfo info;
+    RRW_MouseInfo info;
     info.x = this->_mousePositionX;
     info.y = this->_mousePositionY;
     info.clickL = this->_leftClick;
@@ -61,9 +61,9 @@ MouseInfo RustyControl::getMouseInfo()
     return info;
 }
 
-MouseMove RustyControl::getMouseMove()
+RRW_MouseMove RustyControl::getMouseMove()
 {
-    MouseMove move;
+    RRW_MouseMove move;
     move.vecx = this->_mousePositionX - this->_mousePositionXmem;
     move.vecy = this->_mousePositionY - this->_mousePositionYmem;
 

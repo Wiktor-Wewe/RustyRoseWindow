@@ -8,32 +8,45 @@
 #ifndef SHARED_RESOURCE_UTIL_H
 #define SHARED_RESOURCE_UTIL_H
 
-enum FontSize{
-    Small,
-    Medium,
-    Large
-};
+struct RRW_Font {
+	RRW_Font(const char* path, int size, int outlineSize) {
+		this->font = TTF_OpenFont(path, size);
+		this->outline = TTF_OpenFont(path, size);
+		this->outlineSize = outlineSize;
+		TTF_SetFontOutline(this->outline, outlineSize);
+	}
 
-struct Fonts {
-    Fonts(TTF_Font* small, TTF_Font* medium, TTF_Font* large) {
-        this->Small = small;
-        this->Medium = medium;
-        this->Large = large;
-    }
+	TTF_Font* font = NULL;
+	TTF_Font* outline = NULL;
+	int outlineSize = 0;
 
-    TTF_Font* Small = NULL;
-    TTF_Font* Medium = NULL;
-    TTF_Font* Large = NULL;
+	bool isGood() {
+		if (this->font && this->outline) {
+			return true;
+		}
+		return false;
+	}
 
-	~Fonts() {
-		if (Small) TTF_CloseFont(Small);
-		if (Medium) TTF_CloseFont(Medium);
-		if (Large) TTF_CloseFont(Large);
+	~RRW_Font() {
+		if (this->font) TTF_CloseFont(this->font);
+		if (this->outline) TTF_CloseFont(this->outline);
 	}
 };
 
-struct ScreenSize {
-    ScreenSize(int width, int height) {
+struct RRW_Fonts {
+	RRW_Font* small = NULL;
+	RRW_Font* medium = NULL;
+	RRW_Font* large = NULL;
+
+	~RRW_Fonts() {
+		if (this->small) delete this->small;
+		if (this->medium) delete this->medium;
+		if (this->large) delete this->large;
+	}
+};
+
+struct RRW_ScreenSize {
+    RRW_ScreenSize(int width, int height) {
         this->Width = width;
         this->Height = height;
     }
@@ -42,38 +55,80 @@ struct ScreenSize {
     int Height;
 };
 
-struct ImageText {
+struct RRW_ImageText {
 	std::string text;
 	SDL_Texture* texture = NULL;
 	SDL_Rect* rect = new SDL_Rect;
 
-	~ImageText() {
+	~RRW_ImageText() {
 		if (this->rect) delete this->rect;
 		if (this->texture) SDL_DestroyTexture(this->texture);
 	}
 };
 
-struct Image {
+struct RRW_Image {
 	std::string path;
 	SDL_Texture* texture = NULL;
 	SDL_Rect* rect = NULL;
 };
 
-struct MouseInfo {
+struct RRW_MouseInfo {
 	int x;
 	int y;
 	bool clickL;
 	bool clickR;
 };
 
-struct MouseMove {
+struct RRW_MouseMove {
 	int vecx;
 	int vecy;
 };
 
-static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Font* font, SDL_Color textColor, SDL_Color outlineColor, SDL_Renderer* renderer, int wrapLength)
+static RRW_Fonts* RRW_OpenFonts(const char* path, int smallSize, int mediumSize, int largeSize, int outlineSize) 
 {
-	auto renderTarget = SDL_GetRenderTarget(renderer);
+	RRW_Font* small = new RRW_Font(path, smallSize, outlineSize);
+	RRW_Font* medium = new RRW_Font(path, mediumSize, outlineSize);
+	RRW_Font* large = new RRW_Font(path, largeSize, outlineSize);
+
+	RRW_Fonts* fonts = new RRW_Fonts;
+	fonts->small = small;
+	fonts->medium = medium;
+	fonts->large = large;
+
+	if (small->isGood() && medium->isGood() && large->isGood()) {
+		return fonts;
+	}
+
+	delete fonts;
+	fonts = nullptr;
+	return fonts;
+}
+
+static SDL_Texture* RRW_MakeTextureFromText(std::string text, SDL_Rect* size, RRW_Font* font, SDL_Color textColor, SDL_Color outlineColor, SDL_Renderer* renderer, int wrapLength, int align = TTF_WRAPPED_ALIGN_CENTER)
+{
+	TTF_SetFontWrappedAlign(font->font, align);
+	TTF_SetFontWrappedAlign(font->outline, align);
+	SDL_Surface* textOutlineSurface = TTF_RenderUTF8_Blended_Wrapped(font->outline, text.c_str(), outlineColor, wrapLength);
+	SDL_Surface* textSurface = TTF_RenderUTF8_Blended_Wrapped(font->font, text.c_str(), textColor, wrapLength);
+
+	SDL_Rect rect = { font->outlineSize, font->outlineSize, textSurface->w, textSurface->h };
+	
+	SDL_SetSurfaceBlendMode(textSurface, SDL_BLENDMODE_BLEND);
+	SDL_BlitSurface(textSurface, NULL, textOutlineSurface, &rect);
+	SDL_FreeSurface(textSurface);
+
+	size->w = textOutlineSurface->w;
+	size->h = textOutlineSurface->h;
+	
+	auto result = SDL_CreateTextureFromSurface(renderer, textOutlineSurface);
+	SDL_FreeSurface(textOutlineSurface);
+	return result;
+}
+
+static SDL_Texture* RRW_MakeTextureFromTextClassic(std::string text, SDL_Rect* size, TTF_Font* font, SDL_Color textColor, SDL_Color outlineColor, SDL_Renderer* renderer, int wrapLength, int align = TTF_WRAPPED_ALIGN_CENTER)
+{
+	auto oldTarget = SDL_GetRenderTarget(renderer);
+	TTF_SetFontWrappedAlign(font, align);
 
 	SDL_Surface* outlineSurface = TTF_RenderUTF8_Blended_Wrapped(font, text.c_str(), outlineColor, wrapLength);
 	if (outlineSurface == NULL) {
@@ -120,7 +175,7 @@ static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Fo
 		printf("unable to make text surface in text: %s\n", text.c_str());
 		SDL_FreeSurface(outlineSurface);
 		SDL_DestroyTexture(outlineTexture);
-		SDL_SetRenderTarget(renderer, NULL);
+		SDL_SetRenderTarget(renderer, oldTarget);
 		return finalTexture;
 	}
 
@@ -130,7 +185,7 @@ static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Fo
 		SDL_FreeSurface(outlineSurface);
 		SDL_FreeSurface(textSurface);
 		SDL_DestroyTexture(outlineTexture);
-		SDL_SetRenderTarget(renderer, NULL);
+		SDL_SetRenderTarget(renderer, oldTarget);
 		return finalTexture;
 	}
 
@@ -140,11 +195,11 @@ static SDL_Texture* makeTextureFromText(std::string text, SDL_Rect* size, TTF_Fo
 	SDL_FreeSurface(textSurface);
 	SDL_DestroyTexture(outlineTexture);
 	SDL_DestroyTexture(textTexture);
-	SDL_SetRenderTarget(renderer, renderTarget);
+	SDL_SetRenderTarget(renderer, oldTarget);
 	return finalTexture;
 }
 
-static bool checkMousePositionOnObject(int xMouse, int yMouse, SDL_Rect* objectPosition) 
+static bool RRW_CheckMousePositionOnObject(int xMouse, int yMouse, SDL_Rect* objectPosition) 
 {
 	if ( xMouse >= objectPosition->x && xMouse <= objectPosition->x + objectPosition->w && 
 		 yMouse >= objectPosition->y && yMouse <= objectPosition->y + objectPosition->h )

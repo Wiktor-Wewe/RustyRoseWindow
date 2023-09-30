@@ -60,13 +60,13 @@ void RustyWindowsManager::updateCurrentWindow(int mousePositionX, int mousePosit
 	RustyWindow* newCurrentWindow = nullptr;
 
 	// if current window is running, end update
-	if (checkMousePositionOnObject(mousePositionX, mousePositionY, this->_windows[this->_currentWindowId]->getBarAndWindowPosition())) {
+	if (RRW_CheckMousePositionOnObject(mousePositionX, mousePositionY, this->_windows[this->_currentWindowId]->getBarAndWindowPosition())) {
 		return;
 	}
 
 	// find new current window
 	for (auto window : this->_windows) {
-		if (checkMousePositionOnObject(mousePositionX, mousePositionY, window.second->getBarAndWindowPosition())) {
+		if (RRW_CheckMousePositionOnObject(mousePositionX, mousePositionY, window.second->getBarAndWindowPosition())) {
 			newCurrentWindowId = window.first;
 			newCurrentWindow = window.second;
 			break;

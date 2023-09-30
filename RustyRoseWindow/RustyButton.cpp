@@ -1,6 +1,6 @@
 #include "RustyButton.h"
 
-RustyButton::RustyButton(int id, SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Font* font, int x, int y, int width, int height)
+RustyButton::RustyButton(int id, SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font, int x, int y, int width, int height)
 {
 	this->_id = id;
 
@@ -46,16 +46,16 @@ void RustyButton::setText(std::string text)
 		this->_text = NULL;
 	}
 
-	ImageText* imageText = new ImageText;
+	RRW_ImageText* imageText = new RRW_ImageText;
 	imageText->text = text;
-	imageText->texture = makeTextureFromText(text, imageText->rect, this->_font, this->_fontColor, this->_fontOutlineColor, this->_renderer, this->_position->w - 5);
+	imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, this->_font, this->_fontColor, this->_fontOutlineColor, this->_renderer, this->_position->w - 5);
 	imageText->rect->x = (this->_position->w / 2) - (imageText->rect->w / 2);
 	imageText->rect->y = (this->_position->h / 2) - (imageText->rect->h / 2);
 
 	this->_text = imageText;
 }
 
-void RustyButton::setFont(TTF_Font* font)
+void RustyButton::setFont(RRW_Font* font)
 {
 	this->_font = font;
 }

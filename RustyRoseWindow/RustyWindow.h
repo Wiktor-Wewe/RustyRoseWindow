@@ -5,8 +5,8 @@
 class RustyWindow
 {
 public:
-	explicit RustyWindow(SDL_Renderer* renderer, ScreenSize* screenSize, TTF_Font* font, int width, int height);
-	void setFont(TTF_Font* font);
+	explicit RustyWindow(SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font, int width, int height);
+	void setFont(RRW_Font* font);
 	void setPosition(int x, int y);
 	void setSize(int width, int height);
 	void setBackgroundColor(SDL_Color color);
@@ -18,11 +18,11 @@ public:
 	void setCustomTexture(SDL_Texture* texture);
 	void setBarSize(int height);
 	
-	void addText(std::string text, int x, int y, TTF_Font* font = NULL, int maxWidth = 0);
+	void addText(std::string text, int x, int y, RRW_Font* font = NULL, int maxWidth = 0);
 	void removeText(std::string text);
 	void centerTexts();
 
-	unsigned int addButton(std::string text, int x, int y, int width, int height, TTF_Font* font = NULL); // windowMenager sould manage id
+	unsigned int addButton(std::string text, int x, int y, int width, int height, RRW_Font* font = NULL); // windowMenager sould manage id
 	void removeButton(int id);
 	void centerButtons();
 	RustyButton* getButton(int id);
@@ -47,8 +47,8 @@ public:
 protected:
 	unsigned int _buttonIdCounter;
 	SDL_Renderer* _renderer;
-	ScreenSize* _screenSize;
-	TTF_Font* _font;
+	RRW_ScreenSize* _screenSize;
+	RRW_Font* _font;
 	SDL_Rect* _position;
 	SDL_Rect* _barPosition;
 	SDL_Rect* _barAndWindowPosition; // only updated when getBarAndWindowPosition()
@@ -62,7 +62,7 @@ protected:
 	SDL_Color _selectHoverColor;
 
 	SDL_Texture* _customTexture;
-	std::vector<ImageText*> _texts;
+	std::vector<RRW_ImageText*> _texts;
 	std::vector<RustyButton*> _buttons;
 };
 
