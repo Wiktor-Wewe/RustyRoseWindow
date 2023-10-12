@@ -72,7 +72,7 @@ void RustyScene::addText(std::string text, int x, int y, SDL_Color color, SDL_Co
 	RRW_Font* selectedFont = font != nullptr ? font : this->_font;
 	int selectedMaxLineSize = maxLineSize != 0 ? maxLineSize : this->_maxLineSize;
 
-	imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, font, color, hoverColor, this->_renderer, selectedMaxLineSize, TTF_WRAPPED_ALIGN_LEFT);
+	imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, selectedFont, color, hoverColor, this->_renderer, selectedMaxLineSize, TTF_WRAPPED_ALIGN_LEFT);
 
 	this->_floatingText.push_back(imageText);
 }
