@@ -25,6 +25,7 @@ void RustyControl::handle(SDL_Event event)
         if (it != this->_keyFunctions.end()) {
             if (this->_isPressed(it->first) == false) {
                 this->_pressedKey.push_back(it->first);
+
             }
         }
     }
@@ -39,15 +40,20 @@ void RustyControl::handle(SDL_Event event)
 
     // handle all of this->_pressedKey
     for (auto key : this->_pressedKey) {
-        auto function = this->_keyFunctions[key];
-        if (function) function(); // make function only if function is not null
+        auto it = std::find(this->_pressedKeyInFrame.begin(), this->_pressedKeyInFrame.end(), key);
+        if (it == this->_pressedKeyInFrame.end()) { // bacase we want make this funcion only once in frame
+            auto function = this->_keyFunctions[key];
+            if (function) function(); // make function only if function is not null
+            this->_pressedKeyInFrame.push_back(key);
+        }
     }
 }
 
-void RustyControl::resetMove()
+void RustyControl::reset()
 {
     this->_mousePositionXmem = this->_mousePositionX;
     this->_mousePositionYmem = this->_mousePositionY;
+    this->_pressedKeyInFrame.clear();
 }
 
 RRW_MouseInfo RustyControl::getMouseInfo()

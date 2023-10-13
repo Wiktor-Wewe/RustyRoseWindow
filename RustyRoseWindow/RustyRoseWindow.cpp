@@ -24,6 +24,10 @@ int CloseWindow() {
     return -1;
 }
 
+void pressC() {
+    printf("c was pressed\n");
+}
+
 void makeNewWindow() {
     i++;
     std::string text = "Are you sure you want to override save file?";
@@ -83,6 +87,7 @@ int main(int argc, char* args[]) {
 
     RustyControl control;
     control.addKeyFunction(SDLK_SPACE, makeNewWindow);
+    control.addKeyFunction(SDLK_c, pressC);
 
     std::string text = "Are you sure you want to override save file?";
     RustyDialogWindow* dialogWindow = new RustyDialogWindow(text, renderer, screenSize, fonts->medium, fonts->small, 600, 400);
@@ -135,7 +140,7 @@ int main(int argc, char* args[]) {
 
         handleWindows(renderWindow->getManager(), &control);
         
-        control.resetMove();
+        control.reset();
         SDL_Delay(2);
     }
 
