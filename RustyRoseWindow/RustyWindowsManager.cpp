@@ -27,6 +27,15 @@ void RustyWindowsManager::removeWindow(unsigned int id)
 		delete response;
 		this->_windows.erase(id);
 	}
+	
+	if (this->_windows.empty()) {
+		this->_currentWindowId = 0;
+	}
+	{
+		for (auto window : this->_windows) {
+			this->_currentWindowId = window.first;
+		}
+	}
 }
 
 void RustyWindowsManager::removeCurrentWindow()
