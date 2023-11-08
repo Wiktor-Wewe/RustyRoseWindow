@@ -2,6 +2,12 @@
 
 RustyWindow::RustyWindow(SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font, int width, int height)
 {
+	this->_show = true;
+	this->_showBar = true;
+	this->_lockPosition = false;
+	this->_lockButtons = false;
+
+	this->_closeWindowButtonId = 0;
 	this->_buttonIdCounter = 1;
 	this->_renderer = renderer;
 	this->_screenSize = screenSize;
@@ -100,6 +106,14 @@ void RustyWindow::setBarSize(int height)
 	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
+bool RustyWindow::isFontSet()
+{
+	if (this->_font) {
+		return true;
+	}
+	return false;
+}
+
 void RustyWindow::addText(std::string text, int x, int y, RRW_Font* font, int maxWidth)
 {
 	RRW_ImageText* imageText = new RRW_ImageText;
@@ -143,13 +157,49 @@ unsigned int RustyWindow::addButton(std::string text, int x, int y, int width, i
 	unsigned int id = this->_buttonIdCounter;
 
 	// add button and text on it
-	RustyButton* button = new RustyButton(id, this->_renderer, this->_screenSize, font, x, y, width, height);
+	RustyButton* button = new RustyButton(id, this->_renderer, this->_screenSize, buttonFont, x, y, width, height);
 	button->setText(text);
 	this->_buttons.push_back(button);
 
 	// move counter and return id of new button
 	this->_buttonIdCounter++;
 	return id;
+}
+
+unsigned int RustyWindow::addCloseButton()
+{
+	unsigned int id = this->_buttonIdCounter;
+
+	SDL_Rect buttonPosition;
+	int buttonSize = this->_barPosition->h * 0.8;
+	buttonPosition.x = this->_barPosition->w - buttonSize - (buttonSize * 0.2);
+	buttonPosition.y = -this->_barPosition->h + buttonSize * 0.15;
+	buttonPosition.w = buttonSize;
+	buttonPosition.h = buttonSize;
+
+	auto button = new RustyButton(id, this->_renderer, this->_screenSize, this->_font, buttonPosition.x, buttonPosition.y, buttonPosition.w, buttonPosition.h);
+	button->setText("X");
+	this->_buttons.push_back(button);
+	button->setFunction([this]()-> int { return this->_closeWindow(); });
+	this->_closeWindowButtonId = id;
+
+	this->_buttonIdCounter++;
+	return id;
+}
+
+void RustyWindow::lockButtons()
+{
+	this->_lockButtons = true;
+}
+
+void RustyWindow::unlockButtons()
+{
+	this->_lockButtons = false;
+}
+
+bool RustyWindow::isButtonsLocked()
+{
+	return this->_lockButtons;
 }
 
 void RustyWindow::removeButton(int id)
@@ -165,12 +215,39 @@ void RustyWindow::removeButton(int id)
 
 void RustyWindow::centerButtons()
 {
-	int partOfScreenX = this->_position->w / (this->_buttons.size() + 1);
+	std::vector<RustyButton*> buttons;
+	for (auto button : this->_buttons) {
+		if (button->getId() != this->_closeWindowButtonId) {
+			buttons.push_back(button);
+		}
+	}
+
+	int partOfScreenX = this->_position->w / (buttons.size() + 1);
 	int partOfScreenY = this->_position->h / 6;
 
-	for (int i = 0; i < this->_buttons.size(); i++) {
-		int tempX = (partOfScreenX + (partOfScreenX * i)) - ((this->_buttons[i]->getPosition()->w) / 2);
-		this->_buttons[i]->setPosition(tempX, partOfScreenY * 5);
+	for (int i = 0; i < buttons.size(); i++) {
+		int tempX = (partOfScreenX + (partOfScreenX * i)) - ((buttons[i]->getPosition()->w) / 2);
+		buttons[i]->setPosition(tempX, (partOfScreenY * 5) - (buttons[i]->getPosition()->h / 2));
+	}
+}
+
+void RustyWindow::formatButtons()
+{
+	int maxWidth = 0;
+	int maxHeight = 0;
+
+	for (auto button : this->_buttons) {
+		if (maxWidth < button->getPosition()->w) {
+			maxWidth = button->getPosition()->w;
+		}
+		if (maxHeight < button->getPosition()->h) {
+			maxHeight = button->getPosition()->h;
+		}
+	}
+
+	for (auto button : this->_buttons) {
+		button->setSize(maxWidth, maxHeight);
+		button->centerText();
 	}
 }
 
@@ -210,10 +287,20 @@ void RustyWindow::updateSelectedId(int mouseX, int mouseY)
 
 int RustyWindow::click()
 {
-	if (this->_selectedId > 0) {
-		return this->getButton(this->_selectedId)->makeFunction();
+	if (this->_lockButtons) {
+		return -2;
 	}
-	return 0;
+
+	if (this->getSelectedId() == this->_closeWindowButtonId && this->_showBar == false) {
+		return -2;
+	}
+
+	auto button = this->getButton(this->getSelectedId());
+	if (button) {
+		return button->makeFunction();
+	}
+
+	return -2;
 }
 
 int RustyWindow::getSelectedId()
@@ -238,6 +325,26 @@ SDL_Rect* RustyWindow::getBarAndWindowPosition()
 	this->_barAndWindowPosition->w = this->_barPosition->w;
 	this->_barAndWindowPosition->h = this->_barPosition->h + this->_position->h;
 	return this->_barAndWindowPosition;
+}
+
+void RustyWindow::formatWindow()
+{
+	if (this->_buttons.empty()) {
+		return;
+	}
+
+	int newWidth = (this->_buttons.size() * this->_buttons[0]->getPosition()->w) + (this->_buttons[0]->getPosition()->w * 1.5);
+	this->setSize(newWidth, 0);
+	this->centerButtons();
+	this->centerTexts();
+}
+
+void RustyWindow::centerWindow()
+{
+	this->_position->x = (this->_screenSize->Width / 2) - (this->_position->w / 2);
+	this->_barPosition->x = this->_position->x;
+	this->_position->y = (this->_screenSize->Height / 2) - (this->_position->h / 2);
+	this->_barPosition->y = this->_position->y - this->_barPosition->h + 1;
 }
 
 void RustyWindow::moveCursor(int direction)
@@ -266,8 +373,42 @@ void RustyWindow::setCursor(unsigned int id)
 	this->getButton(this->_selectedId)->setSelect(true);
 }
 
+void RustyWindow::hide()
+{
+	this->_show = false;
+}
+
+void RustyWindow::show()
+{
+	this->_show = true;
+}
+
+void RustyWindow::hideBar()
+{
+	this->_showBar = false;
+}
+
+void RustyWindow::showBar()
+{
+	this->_showBar = true;
+}
+
+void RustyWindow::lockPosition()
+{
+	this->_lockPosition = true;
+}
+
+void RustyWindow::unlockPosition()
+{
+	this->_lockPosition = false;
+}
+
 void RustyWindow::move(int vecx, int vecy)
 {
+	if (this->_lockPosition) {
+		return;
+	}
+
 	if (this->_position->x + this->_position->w + vecx < this->_screenSize->Width && this->_position->x > 0) {
 		this->_position->x += vecx;
 
@@ -296,6 +437,10 @@ void RustyWindow::move(int vecx, int vecy)
 
 void RustyWindow::draw()
 {
+	if (this->_show == false) {
+		return;
+	}
+
 	auto oldTarget = SDL_GetRenderTarget(this->_renderer);
 	SDL_Color oldColor; SDL_GetRenderDrawColor(this->_renderer, &oldColor.r, &oldColor.g, &oldColor.b, &oldColor.a);
 
@@ -309,10 +454,12 @@ void RustyWindow::draw()
 		SDL_RenderFillRect(this->_renderer, this->_position);
 		SDL_SetRenderDrawColor(this->_renderer, this->_borderColor.r, this->_borderColor.g, this->_borderColor.b, this->_borderColor.a);
 		SDL_RenderDrawRect(this->_renderer, this->_position);
-		SDL_SetRenderDrawColor(this->_renderer, this->_barColor.r, this->_barColor.g, this->_barColor.b, this->_barColor.a);
-		SDL_RenderFillRect(this->_renderer, this->_barPosition);
-		SDL_SetRenderDrawColor(this->_renderer, this->_borderColor.r, this->_borderColor.g, this->_borderColor.b, this->_borderColor.a);
-		SDL_RenderDrawRect(this->_renderer, this->_barPosition);
+		if (this->_showBar) {
+			SDL_SetRenderDrawColor(this->_renderer, this->_barColor.r, this->_barColor.g, this->_barColor.b, this->_barColor.a);
+			SDL_RenderFillRect(this->_renderer, this->_barPosition);
+			SDL_SetRenderDrawColor(this->_renderer, this->_borderColor.r, this->_borderColor.g, this->_borderColor.b, this->_borderColor.a);
+			SDL_RenderDrawRect(this->_renderer, this->_barPosition);
+		}
 	}
 
 	SDL_Rect tempRect;
@@ -325,20 +472,14 @@ void RustyWindow::draw()
 	}
 
 	for (auto button : this->_buttons) {
+		if (this->_showBar == false && button->getId() != 0) {
+			continue;
+		}
 		button->draw(this->_position);
 	}
 
 	SDL_SetRenderTarget(this->_renderer, oldTarget);
 	SDL_SetRenderDrawColor(this->_renderer, oldColor.r, oldColor.b, oldColor.b, oldColor.a);
-}
-
-int RustyWindow::enter()
-{
-	auto button = this->getButton(this->getSelectedId());
-	if (button) {
-		return button->makeFunction();
-	}
-	return -1;
 }
 
 RustyWindow::~RustyWindow()
@@ -355,4 +496,9 @@ RustyWindow::~RustyWindow()
 	for (auto button : this->_buttons) {
 		delete button;
 	}
+}
+
+int RustyWindow::_closeWindow()
+{
+	return -1;
 }

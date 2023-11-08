@@ -6,7 +6,7 @@
 class RustyRenderWindow
 {
 public:
-	RustyRenderWindow(std::string windowName, int windowWidth, int windowHeight, const char* fontPath);
+	RustyRenderWindow(std::string windowName, int windowWidth, int windowHeight, const char* fontPath, int outlineSize = 1);
 	
 	void setFontSmall(const char* fontPath, int size, int outlineSize);
 	void setFontMedium(const char* fontPath, int size, int outlineSize);

@@ -21,6 +21,7 @@ public:
 	void setFunction(std::function<int()> function);
 	int makeFunction();
 
+	void centerText();
 	void setCustomTexture(SDL_Texture* texture);
 	void setCustomHoverTexture(SDL_Texture* texture);
 	

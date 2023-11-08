@@ -1,14 +1,39 @@
 #include "RustyWindowsManager.h"
 
-RustyWindowsManager::RustyWindowsManager()
+RustyWindowsManager::RustyWindowsManager(SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font)
 {
 	this->_idCounter = 1;
 	this->_currentWindowId = 0;
+	this->_font = font;
+
+	this->_renderer = renderer;
+	this->_screenSize = screenSize;
+}
+
+void RustyWindowsManager::setFont(RRW_Font* font)
+{
+	this->_font = font;
+}
+
+RustyWindow* RustyWindowsManager::makeWindow(int width, int height, int& id)
+{
+	RustyWindow* window = new RustyWindow(this->_renderer, this->_screenSize, this->_font, width, height);
+	this->_windows.push_back(std::make_pair(this->_idCounter, window));
+	this->_currentWindowId = this->_idCounter;
+	id = this->_currentWindowId;
+	this->_idCounter++;
+
+	return window;
 }
 
 unsigned int RustyWindowsManager::addWindow(RustyWindow* window)
 {
-	this->_windows[this->_idCounter] = window;
+	if (window->isFontSet() == false) {
+		window->setFont(this->_font);
+	}
+
+	this->_windows.push_back(std::make_pair(this->_idCounter, window));
+
 	this->_currentWindowId = this->_idCounter;
 	this->_idCounter++;
 
@@ -17,15 +42,23 @@ unsigned int RustyWindowsManager::addWindow(RustyWindow* window)
 
 RustyWindow* RustyWindowsManager::getWindow(unsigned int id)
 {
-	return this->_windows[id];
+	for (auto w : this->_windows) {
+		if (w.first == id) {
+			return w.second;
+		}
+	}
+
+	return nullptr;
 }
 
 void RustyWindowsManager::removeWindow(unsigned int id)
 {
-	auto response = this->_windows[id];
-	if (response) {
-		delete response;
-		this->_windows.erase(id);
+	for (int i = 0; i < this->_windows.size(); i++) {
+		if (this->_windows[i].first == id) {
+			delete this->_windows[i].second;
+			this->_windows.erase(this->_windows.begin() + i);
+			break;
+		}
 	}
 	
 	if (this->_windows.empty()) {
@@ -40,13 +73,19 @@ void RustyWindowsManager::removeWindow(unsigned int id)
 
 void RustyWindowsManager::removeCurrentWindow()
 {
-	delete this->_windows[this->_currentWindowId];
-	this->_windows.erase(this->_currentWindowId);
+
+	for (int i = 0; i < this->_windows.size(); i++) {
+		if (this->_windows[i].first == this->_currentWindowId) {
+			delete this->_windows[i].second;
+			this->_windows.erase(this->_windows.begin() + i);
+			break;
+		}
+	}
 	
 	if (this->_windows.empty()) {
 		this->_currentWindowId = 0;
 	}
-	{
+	else {
 		for (auto window : this->_windows) {
 			this->_currentWindowId = window.first;
 		}
@@ -55,7 +94,13 @@ void RustyWindowsManager::removeCurrentWindow()
 
 RustyWindow* RustyWindowsManager::getCurrentWindow()
 {
-	return this->_windows[this->_currentWindowId];
+	for (auto window : this->_windows) {
+		if (window.first == this->_currentWindowId) {
+			return window.second;
+		}
+	}
+
+	return nullptr;
 }
 
 unsigned int RustyWindowsManager::getCurrentWindowId()
@@ -69,7 +114,7 @@ void RustyWindowsManager::updateCurrentWindow(int mousePositionX, int mousePosit
 	RustyWindow* newCurrentWindow = nullptr;
 
 	// if current window is running, end update
-	if (RRW_CheckMousePositionOnObject(mousePositionX, mousePositionY, this->_windows[this->_currentWindowId]->getBarAndWindowPosition())) {
+	if (RRW_CheckMousePositionOnObject(mousePositionX, mousePositionY, this->getCurrentWindow()->getBarAndWindowPosition())) {
 		return;
 	}
 
@@ -88,8 +133,14 @@ void RustyWindowsManager::updateCurrentWindow(int mousePositionX, int mousePosit
 	}
 
 	// move new current window at the top
-	this->_windows.erase(newCurrentWindowId);
-	this->_windows[newCurrentWindowId] = newCurrentWindow;
+	for (int i = 0; i < this->_windows.size(); i++) {
+		if (this->_windows[i].first == newCurrentWindowId) {
+			this->_windows.erase(this->_windows.begin() + i);
+			break;
+		}
+	}
+
+	this->_windows.push_back(std::make_pair(newCurrentWindowId, newCurrentWindow));
 
 	// set new current window
 	this->_currentWindowId = newCurrentWindowId;

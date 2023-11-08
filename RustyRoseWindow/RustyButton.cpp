@@ -10,6 +10,7 @@ RustyButton::RustyButton(int id, SDL_Renderer* renderer, RRW_ScreenSize* screenS
 	this->_position = new SDL_Rect;
 	this->_position->x = x;
 	this->_position->y = y;
+
 	this->_position->w = width;
 	this->_position->h = height;
 	this->_text = NULL;
@@ -48,10 +49,20 @@ void RustyButton::setText(std::string text)
 
 	RRW_ImageText* imageText = new RRW_ImageText;
 	imageText->text = text;
-	imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, this->_font, this->_fontColor, this->_fontOutlineColor, this->_renderer, this->_position->w - 5);
-	imageText->rect->x = (this->_position->w / 2) - (imageText->rect->w / 2);
-	imageText->rect->y = (this->_position->h / 2) - (imageText->rect->h / 2);
 
+	if (this->_position->w == 0 || this->_position->h == 0) { // <- && ? ||
+		imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, this->_font, this->_fontColor, this->_fontOutlineColor, this->_renderer, 0);
+		this->_position->w = imageText->rect->w * 1.4;
+		this->_position->h = imageText->rect->h * 1.2;
+		imageText->rect->x = (this->_position->w / 2) - (imageText->rect->w / 2);
+		imageText->rect->y = (this->_position->h / 2) - (imageText->rect->h / 2);
+	}
+	else {
+		imageText->texture = RRW_MakeTextureFromText(text, imageText->rect, this->_font, this->_fontColor, this->_fontOutlineColor, this->_renderer, this->_position->w - 5);
+		imageText->rect->x = (this->_position->w / 2) - (imageText->rect->w / 2);
+		imageText->rect->y = (this->_position->h / 2) - (imageText->rect->h / 2);
+	}
+	
 	this->_text = imageText;
 }
 
@@ -106,7 +117,13 @@ int RustyButton::makeFunction()
 	if (this->_function) {
 		return this->_function();
 	}
-	return -1;
+	return -2;
+}
+
+void RustyButton::centerText()
+{
+	this->_text->rect->x = (this->_position->w / 2) - (this->_text->rect->w / 2);
+	this->_text->rect->y = (this->_position->h / 2) - (this->_text->rect->h / 2);
 }
 
 void RustyButton::setCustomTexture(SDL_Texture* texture)

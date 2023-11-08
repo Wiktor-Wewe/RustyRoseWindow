@@ -18,13 +18,19 @@ public:
 	void setCustomTexture(SDL_Texture* texture);
 	void setBarSize(int height);
 	
+	bool isFontSet();
 	void addText(std::string text, int x, int y, RRW_Font* font = NULL, int maxWidth = 0);
 	void removeText(std::string text);
 	void centerTexts();
 
-	unsigned int addButton(std::string text, int x, int y, int width, int height, RRW_Font* font = NULL); // windowMenager sould manage id
+	unsigned int addButton(std::string text, int x, int y, int width, int height, RRW_Font* font = NULL); // windowManager should manage id
+	unsigned int addCloseButton();
+	void lockButtons();
+	void unlockButtons();
+	bool isButtonsLocked();
 	void removeButton(int id);
 	void centerButtons();
+	void formatButtons();
 	RustyButton* getButton(int id);
 
 	void updateSelectedId(int mouseX, int mouseY);
@@ -34,17 +40,33 @@ public:
 	SDL_Rect* getWindowPosition();
 	SDL_Rect* getBarPosition();
 	SDL_Rect* getBarAndWindowPosition();
+	void formatWindow();
+	void centerWindow();
 
 	void moveCursor(int direction);
 	void setCursor(unsigned int id);
 
+	void hide();
+	void show();
+
+	void hideBar();
+	void showBar();
+
+	void lockPosition();
+	void unlockPosition();
+
 	void move(int vecx, int vecy);
 	virtual void draw();
-	int enter();
 
 	~RustyWindow();
 
 protected:
+	bool _show;
+	bool _showBar;
+	bool _lockPosition;
+	bool _lockButtons;
+
+	unsigned int _closeWindowButtonId;
 	unsigned int _buttonIdCounter;
 	SDL_Renderer* _renderer;
 	RRW_ScreenSize* _screenSize;
@@ -64,5 +86,7 @@ protected:
 	SDL_Texture* _customTexture;
 	std::vector<RRW_ImageText*> _texts;
 	std::vector<RustyButton*> _buttons;
+
+	int _closeWindow();
 };
 

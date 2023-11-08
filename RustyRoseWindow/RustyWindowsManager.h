@@ -1,13 +1,14 @@
 #pragma once
 #include "SharedResourceUtil.h"
-#include "RustyDialogWindow.h"
-#include <unordered_map>
+#include "RustyWindow.h"
 
 class RustyWindowsManager
 {
 public:
-	RustyWindowsManager();
+	RustyWindowsManager(SDL_Renderer* renderer, RRW_ScreenSize* screenSize, RRW_Font* font);
+	void setFont(RRW_Font* font);
 
+	RustyWindow* makeWindow(int width, int height, int& id);
 	unsigned int addWindow(RustyWindow* window); //return id of window
 	RustyWindow* getWindow(unsigned int id);
 
@@ -26,7 +27,9 @@ public:
 private:
 	unsigned int _idCounter;
 	unsigned int _currentWindowId;
+	RRW_Font* _font;
+	SDL_Renderer* _renderer;
+	RRW_ScreenSize* _screenSize;
 
-	std::unordered_map<int, RustyWindow*> _windows;
+	std::vector<std::pair<int, RustyWindow*>> _windows;
 };
-

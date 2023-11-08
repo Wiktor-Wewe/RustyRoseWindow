@@ -1,12 +1,55 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <utility>
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
+#include <Windows.h>
 
 #ifndef SHARED_RESOURCE_UTIL_H
 #define SHARED_RESOURCE_UTIL_H
+
+static void RRW_OpenConsole()
+{
+	AllocConsole();
+	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+}
+
+static void RRW_CloseConsole()
+{
+	FreeConsole();
+}
+
+static void RRW_LogInfo(std::string text)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+	printf("RRW_INFO: ");
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+	printf(text.c_str());
+	printf("\n");
+}
+
+static void RRW_LogWarning(std::string text)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
+	printf("RRW_WARNING: ");
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+	printf(text.c_str());
+	printf("\n");
+}
+
+static void RRW_LogError(std::string text)
+{
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+	printf("RRW_ERROR: ");
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE | FOREGROUND_GREEN);
+	printf(text.c_str());
+	printf("\n");
+}
 
 struct RRW_Font {
 	RRW_Font(const char* path, int size, int outlineSize) {
@@ -34,14 +77,14 @@ struct RRW_Font {
 };
 
 struct RRW_Fonts {
-	RRW_Font* small = NULL;
-	RRW_Font* medium = NULL;
-	RRW_Font* large = NULL;
+	RRW_Font* smallFont = NULL;
+	RRW_Font* mediumFont = NULL;
+	RRW_Font* largeFont = NULL;
 
 	~RRW_Fonts() {
-		if (this->small) delete this->small;
-		if (this->medium) delete this->medium;
-		if (this->large) delete this->large;
+		if (this->smallFont) delete this->smallFont;
+		if (this->mediumFont) delete this->mediumFont;
+		if (this->largeFont) delete this->largeFont;
 	}
 };
 
@@ -86,16 +129,16 @@ struct RRW_MouseMove {
 
 static RRW_Fonts* RRW_OpenFonts(const char* path, int smallSize, int mediumSize, int largeSize, int outlineSize) 
 {
-	RRW_Font* small = new RRW_Font(path, smallSize, outlineSize);
-	RRW_Font* medium = new RRW_Font(path, mediumSize, outlineSize);
-	RRW_Font* large = new RRW_Font(path, largeSize, outlineSize);
+	RRW_Font* smallFont = new RRW_Font(path, smallSize, outlineSize);
+	RRW_Font* mediumFont = new RRW_Font(path, mediumSize, outlineSize);
+	RRW_Font* largeFont = new RRW_Font(path, largeSize, outlineSize);
 
 	RRW_Fonts* fonts = new RRW_Fonts;
-	fonts->small = small;
-	fonts->medium = medium;
-	fonts->large = large;
+	fonts->smallFont = smallFont;
+	fonts->mediumFont = mediumFont;
+	fonts->largeFont = largeFont;
 
-	if (small->isGood() && medium->isGood() && large->isGood()) {
+	if (smallFont->isGood() && mediumFont->isGood() && largeFont->isGood()) {
 		return fonts;
 	}
 
@@ -111,7 +154,17 @@ static SDL_Texture* RRW_MakeTextureFromText(std::string text, SDL_Rect* size, RR
 	SDL_Surface* textOutlineSurface = TTF_RenderUTF8_Blended_Wrapped(font->outline, text.c_str(), outlineColor, wrapLength);
 	SDL_Surface* textSurface = TTF_RenderUTF8_Blended_Wrapped(font->font, text.c_str(), textColor, wrapLength);
 
-	SDL_Rect rect = { font->outlineSize, font->outlineSize, textSurface->w, textSurface->h };
+	SDL_Rect rect = { 0, font->outlineSize, textSurface->w, textSurface->h }; // default for center (TTF_WRAPPED_ALIGN_CENTER)
+	
+	switch (align) {
+	case TTF_WRAPPED_ALIGN_LEFT:
+		rect.x = font->outlineSize;
+		break;
+
+	case TTF_WRAPPED_ALIGN_RIGHT:
+		rect.y = -font->outlineSize; //  to test
+		break;
+	}
 	
 	SDL_SetSurfaceBlendMode(textSurface, SDL_BLENDMODE_BLEND);
 	SDL_BlitSurface(textSurface, NULL, textOutlineSurface, &rect);
@@ -132,20 +185,20 @@ static SDL_Texture* RRW_MakeTextureFromTextClassic(std::string text, SDL_Rect* s
 
 	SDL_Surface* outlineSurface = TTF_RenderUTF8_Blended_Wrapped(font, text.c_str(), outlineColor, wrapLength);
 	if (outlineSurface == NULL) {
-		printf("unable to make outline surface in text: %s\n", text.c_str());
+		RRW_LogError("unable to make outline surface in text: \n" + text);
 		return nullptr;
 	}
 
 	SDL_Texture* outlineTexture = SDL_CreateTextureFromSurface(renderer, outlineSurface);
 	if (outlineTexture == NULL) {
-		printf("unable to make texture from outline surface in text: %s\n", text.c_str());
+		RRW_LogError("unable to make texture from outline surface in text: \n" + text);
 		SDL_FreeSurface(outlineSurface);
 		return nullptr;
 	}
 
 	SDL_Texture* finalTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, outlineSurface->w, outlineSurface->h);
 	if (finalTexture == NULL) {
-		printf("unable to make final texture in text: %s\n", text.c_str());
+		RRW_LogError("unable to make final texture in text: \n" + text);
 		SDL_FreeSurface(outlineSurface);
 		return outlineTexture;
 	}
@@ -172,7 +225,7 @@ static SDL_Texture* RRW_MakeTextureFromTextClassic(std::string text, SDL_Rect* s
 
 	SDL_Surface* textSurface = TTF_RenderUTF8_Blended_Wrapped(font, text.c_str(), textColor, wrapLength);
 	if (textSurface == NULL) {
-		printf("unable to make text surface in text: %s\n", text.c_str());
+		RRW_LogError("unable to make text surface in text: \n" + text);
 		SDL_FreeSurface(outlineSurface);
 		SDL_DestroyTexture(outlineTexture);
 		SDL_SetRenderTarget(renderer, oldTarget);
@@ -181,7 +234,7 @@ static SDL_Texture* RRW_MakeTextureFromTextClassic(std::string text, SDL_Rect* s
 
 	SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
 	if (textTexture == NULL) {
-		printf("unable to make real text in text: %s\n", text.c_str());
+		RRW_LogError("unable to make real text in text: \n" + text);
 		SDL_FreeSurface(outlineSurface);
 		SDL_FreeSurface(textSurface);
 		SDL_DestroyTexture(outlineTexture);

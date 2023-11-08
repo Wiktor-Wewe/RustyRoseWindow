@@ -25,7 +25,6 @@ void RustyControl::handle(SDL_Event event)
         if (it != this->_keyFunctions.end()) {
             if (this->_isPressed(it->first) == false) {
                 this->_pressedKey.push_back(it->first);
-
             }
         }
     }
@@ -42,11 +41,23 @@ void RustyControl::handle(SDL_Event event)
     for (auto key : this->_pressedKey) {
         auto it = std::find(this->_pressedKeyInFrame.begin(), this->_pressedKeyInFrame.end(), key);
         if (it == this->_pressedKeyInFrame.end()) { // bacase we want make this funcion only once in frame
-            auto function = this->_keyFunctions[key];
-            if (function) function(); // make function only if function is not null
-            this->_pressedKeyInFrame.push_back(key);
+            if (std::find(this->_lockedKey.begin(), this->_lockedKey.end(), key) == this->_lockedKey.end()) {
+                auto function = this->_keyFunctions[key];
+                if (function) function(); // make function only if function is not null
+                this->_pressedKeyInFrame.push_back(key);
+            }
         }
     }
+}
+
+void RustyControl::lockKey(SDL_Keycode key)
+{
+    this->_lockedKey.push_back(key);
+}
+
+void RustyControl::wipeLockedKey()
+{
+    this->_lockedKey.clear();
 }
 
 void RustyControl::reset()

@@ -94,7 +94,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -109,7 +109,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -124,7 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>SDL2.lib;SDL2main.lib;SDL2_image.lib;SDL2_ttf.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -139,7 +139,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -149,7 +149,6 @@
   <ItemGroup>
     <ClCompile Include="RustyButton.cpp" />
     <ClCompile Include="RustyControl.cpp" />
-    <ClCompile Include="RustyDialogWindow.cpp" />
     <ClCompile Include="RustyRenderWindow.cpp" />
     <ClCompile Include="RustyRoseWindow.cpp" />
     <ClCompile Include="RustyScene.cpp" />
@@ -159,7 +158,6 @@
   <ItemGroup>
     <ClInclude Include="RustyButton.h" />
     <ClInclude Include="RustyControl.h" />
-    <ClInclude Include="RustyDialogWindow.h" />
     <ClInclude Include="RustyRenderWindow.h" />
     <ClInclude Include="RustyScene.h" />
     <ClInclude Include="RustyWindow.h" />
