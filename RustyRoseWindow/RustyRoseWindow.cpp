@@ -141,6 +141,9 @@ int main(int argc, char* args[]) {
     auto newWindow = renderWindow->getManager()->makeWindow(300, 150, newWindowId);
     newWindow->addCloseButton();
     newWindow->addText("Sciana to swietny kolega!", 0, 0, nullptr);
+    newWindow->addButton("OK", 0, 0, 80, 20, nullptr);
+    newWindow->getButton(2)->setFunction(pressedOk);
+    newWindow->centerButtons();
     newWindow->hideBar();
 
     auto kacperWindow = renderWindow->getManager()->makeWindow(200, 80, newWindowId);

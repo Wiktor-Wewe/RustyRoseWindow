@@ -472,7 +472,7 @@ void RustyWindow::draw()
 	}
 
 	for (auto button : this->_buttons) {
-		if (this->_showBar == false && button->getId() != 0) {
+		if (this->_showBar == false && button->getId() == this->_closeWindowButtonId) {
 			continue;
 		}
 		button->draw(this->_position);
